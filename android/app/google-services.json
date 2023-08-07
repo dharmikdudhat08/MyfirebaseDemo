@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "813840073005",
+    "project_id": "myfirebasedemo-e68de",
+    "storage_bucket": "myfirebasedemo-e68de.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:813840073005:android:7c37546bf97727e295d3a4",
+        "android_client_info": {
+          "package_name": "com.myfirebasedemo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "813840073005-3rjtb28mik46bpobh25aldbnfe9ron6o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvOmXJep6u2cvaJY6Gn16vRBRqPpaV3FI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "813840073005-3rjtb28mik46bpobh25aldbnfe9ron6o.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "813840073005-e7ht4bv5ut31a1udgbt51ve6hhdlorj0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.reactjs.native.example.MyfirebaseDemo"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
