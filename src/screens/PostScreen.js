@@ -126,8 +126,8 @@ const PostScreen = ({navigation}) => {
               .update({
                 urldata: firestore.FieldValue.arrayUnion({imageurl}),
               })
-              .then(() => {
-                console.log(res);
+              .then((response) => {
+                console.log(response,"fhwiefhiweur121243446723447634");
                 setImageData(null);
               });
           });

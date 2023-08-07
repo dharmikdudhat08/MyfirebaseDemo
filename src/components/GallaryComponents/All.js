@@ -28,44 +28,27 @@ const All = () => {
     await firestore()
       .collection('User_Details')
       .doc(`${uid}`)
-      .collection('Post')
-      .doc(`${uid}`)
       .get()
       .then(res => {
-        console.log(res._data.urldata,"&*&*&*&*&*&&*&**&&*&*&  *&*&*&")
-          for(let x in res._data.urldata){
-            if(res._data.urldata[x].videourl){
-              tempData.push({
-                      videourl: res._data.urldata[x].videourl.url,
-                      id: x,
-                    });
-            }else{
-              tempData.push({
-                      path: res._data.urldata[x].imageurl.url,
-                      id: x,
-                    });
-            }
-            
+        for (let it in res._data.urldata) {
+          if (res._data.urldata[it].videourl) {
+            tempData.push({
+              videourl: res._data.urldata[it].videourl.url,
+              id: it,
+            });
+          }else{
+            tempData.push({
+              path: res._data.urldata[it].imageurl.url,
+              id: it,
+            });
           }
           setfirebaseImageData(tempData);
           console.log(
             tempData,
             'hellogelkgjwkgjwkegjelkjgkejgewlkgjwkgjwlkgjwlgwk#######',
           );
-        // for (let it in res._data.urldata) {
-        //   if (res._data.urldata[it].videourl) {
-        //     tempData.push({
-        //       videourl: res._data.urldata[it].videourl.url,
-        //       id: it,
-        //     });
-        //   } else {
-        //     tempData.push({
-        //       path: res._data.urldata[it].imageurl.url,
-        //       id: it,
-        //     });
-        //   }
-         
-        });
+        }
+      });
   };
 
   const Item = ({item}) => {
@@ -113,7 +96,7 @@ const styles = StyleSheet.create({
     marginVertical: hp(0.6),
     marginHorizontal: wp(1.3),
   },
-  viewStyle: {
-    marginHorizontal: wp(2),
-  },
+  viewStyle:{
+    marginHorizontal: wp(2)
+  }
 });

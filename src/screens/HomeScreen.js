@@ -48,26 +48,26 @@ const HomeScreen = ({navigation}) => {
       .get()
       .then(res => {
         console.log(res.docs, 'hellohellohelloo');
-        // for (let x in res.docs) {
-        //   for (let y in res.docs[x]._data.urldata) {
-        //     if (res.docs[x]._data.urldata[y].imageurl) {
-        //       tempData.push({
-        //         // like: res._data.urldata[it].imageurl.like,
-        //         username : res.docs[x]._data.userName,
-        //         path: res.docs[x]._data.urldata[y].imageurl.url,
-        //         id: y,
-        //       });
-        //     } else {
-        //       tempData.push({
-        //         vidoPath: res.docs[x]._data.urldata[y].videourl.url,
-        //         username : res.docs[x]._data.userName,
-        //         // like: res._data.urldata[it].videourl.like,
-        //         id: y,
-        //       });
-        //     }
-        //     setfirebaseImageData(tempData);
-        //   }
-        // }
+        for (let x in res.docs) {
+          for (let y in res.docs[x]._data.urldata) {
+            if (res.docs[x]._data.urldata[y].imageurl) {
+              tempData.push({
+                // like: res._data.urldata[it].imageurl.like,
+                username : res.docs[x]._data.userName,
+                path: res.docs[x]._data.urldata[y].imageurl.url,
+                id: y,
+              });
+            } else {
+              tempData.push({
+                vidoPath: res.docs[x]._data.urldata[y].videourl.url,
+                username : res.docs[x]._data.userName,
+                // like: res._data.urldata[it].videourl.like,
+                id: y,
+              });
+            }
+            setfirebaseImageData(tempData);
+          }
+        }
       });
   };
   const onComment = ()=>{

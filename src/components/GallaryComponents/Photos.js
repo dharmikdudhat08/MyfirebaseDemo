@@ -28,22 +28,17 @@ const Photos = () => {
     await firestore()
       .collection('User_Details')
       .doc(`${uid}`)
-      .collection('Post')
-      .doc(`${uid}`)
       .get()
       .then(res => {
         for (let it in res._data.urldata) {
-          if (res._data.urldata[it].imageurl) {
-            console.log(
-              res._data.urldata[it].imageurl.url,
-              '+_+_+_+_+_+_+_+_+_+_+_+_',
-            );
-            tempData.push({
-              //  like: res._data.urldata[it].imageurl.like,
-              path: res._data.urldata[it].imageurl.url,
-              id: it,
-            });
-          }
+         if(res._data.urldata[it].imageurl){
+          console.log(res._data.urldata[it].imageurl.url,"+_+_+_+_+_+_+_+_+_+_+_+_")
+           tempData.push({
+            //  like: res._data.urldata[it].imageurl.like,
+             path: res._data.urldata[it].imageurl.url,
+             id: it,
+           });
+         }
           setfirebaseImageData(tempData);
         }
       });
@@ -86,7 +81,7 @@ const styles = StyleSheet.create({
     marginVertical: hp(0.6),
     marginHorizontal: wp(1.3),
   },
-  viewStyle: {
-    marginHorizontal: wp(2),
-  },
+  viewStyle:{
+    marginHorizontal: wp(2)
+  }
 });

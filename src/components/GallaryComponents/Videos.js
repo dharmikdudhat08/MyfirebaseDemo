@@ -11,7 +11,7 @@ import {image} from '../../helpers/ImageHelper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import Video from 'react-native-video';
-import {hp, wp} from '../../helpers/GlobalFunction';
+import { hp, wp } from '../../helpers/GlobalFunction';
 
 const Videos = () => {
   const [firebaseImageData, setfirebaseImageData] = useState([]);
@@ -27,8 +27,6 @@ const Videos = () => {
     console.log('====================================');
     await firestore()
       .collection('User_Details')
-      .doc(`${uid}`)
-      .collection('Post')
       .doc(`${uid}`)
       .get()
       .then(res => {
