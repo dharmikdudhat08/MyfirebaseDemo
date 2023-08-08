@@ -31,11 +31,11 @@ const Photos = () => {
       .get()
       .then(res => {
         for (let it in res._data.urldata) {
-         if(res._data.urldata[it].imageurl){
-          console.log(res._data.urldata[it].imageurl.url,"+_+_+_+_+_+_+_+_+_+_+_+_")
+         if(!res._data.urldata[it].mediaType){
+          console.log(res._data.urldata[it].url,"+_+_+_+_+_+_+_+_+_+_+_+_")
            tempData.push({
             //  like: res._data.urldata[it].imageurl.like,
-             path: res._data.urldata[it].imageurl.url,
+             path: res._data.urldata[it].url,
              id: it,
            });
          }

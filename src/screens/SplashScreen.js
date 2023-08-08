@@ -14,10 +14,10 @@ const SplashScreen = ({navigation}) => {
   const validateLogin=async()=>{
     const value = await AsyncStorage.getItem('UID');
     if(value){
-      navigation.navigate('Bottom')
+      navigation.replace('Bottom')
     }
     else{
-      navigation.navigate('Login')
+      navigation.replace('Login')
     }
   }
   return (

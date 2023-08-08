@@ -110,12 +110,9 @@ const PostScreen = ({navigation}) => {
           .ref(filename)
           .getDownloadURL()
           .then(res => {
-            setImageurl({
-              url: `${res}`,
-              like: 5,
-              location: `${location}`,
-              caption: `${caption}`,
-            });
+            const now = new Date();
+            const microseconds = performance.now() * 1000; // Convert milliseconds to microseconds
+            const formattedTime = `${now.toISOString().slice(11, 19)}.${microseconds.toFixed(0).slice(-6)}`
             console.log('====================================');
             console.log(imageurl, '****(*(*(*(*(*(*(*(*(*(');
             console.log('====================================');
@@ -124,7 +121,13 @@ const PostScreen = ({navigation}) => {
               .collection('User_Details')
               .doc(uidValue)
               .update({
-                urldata: firestore.FieldValue.arrayUnion({imageurl}),
+                urldata: firestore.FieldValue.arrayUnion({
+                  url: res,
+                  like: 5,
+                  location: location,
+                  caption: caption,
+                  postId : formattedTime
+                }),
               })
               .then((response) => {
                 console.log(response,"fhwiefhiweur121243446723447634");
@@ -141,19 +144,22 @@ const PostScreen = ({navigation}) => {
           .ref(filename)
           .getDownloadURL()
           .then(res => {
-            setVideourl({
-              url: `${res}`,
-              location: `${location}`,
-              caption: `${caption}`,
-              like: 5,
-            });
+            const now = new Date();
+            const microseconds = performance.now() * 1000; // Convert milliseconds to microseconds
+            const formattedTime = `${now.toISOString().slice(11, 19)}.${microseconds.toFixed(0).slice(-6)}`
+           
             firestore()
               .collection('User_Details')
               .doc(uidValue)
-              .collection('Post')
-              .doc(uidValue)
               .update({
-                urldata: firestore.FieldValue.arrayUnion({videourl}),
+                urldata: firestore.FieldValue.arrayUnion({
+                  url: res,
+                  like: 5,
+                  location: location,
+                  caption: caption,
+                  postId : formattedTime,
+                  mediaType : "video"
+                }),
               })
               .then(res => {
                 console.log(res);

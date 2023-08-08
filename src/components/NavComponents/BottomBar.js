@@ -23,7 +23,7 @@ const BottomBar = ({navigation}) => {
             <Image source={icon.add} style={{ height: 28, width: 28, justifyContent:'center' }} />
         </TouchableOpacity>
         <TouchableOpacity onPress={()=>navigation.navigate('Profile')}>
-            <Image source={icon.account} style={{ height: 28, width: 28, justifyContent:'center' }} />
+            <Image source={icon.account1} style={{ height: 28, width: 28, justifyContent:'center' }} />
         </TouchableOpacity>
         
     </View>

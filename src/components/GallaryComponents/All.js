@@ -31,14 +31,14 @@ const All = () => {
       .get()
       .then(res => {
         for (let it in res._data.urldata) {
-          if (res._data.urldata[it].videourl) {
+          if (res._data.urldata[it].mediaType) {
             tempData.push({
-              videourl: res._data.urldata[it].videourl.url,
+              videourl: res._data.urldata[it].url,
               id: it,
             });
           }else{
             tempData.push({
-              path: res._data.urldata[it].imageurl.url,
+              path: res._data.urldata[it].url,
               id: it,
             });
           }

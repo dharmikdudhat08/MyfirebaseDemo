@@ -14,25 +14,27 @@ import {
 import React, {useCallback, useEffect, useState} from 'react';
 import {icon, image} from '../helpers/ImageHelper';
 import LinearGradient from 'react-native-linear-gradient';
-import {fs} from '../helpers/GlobalFunction';
+import {fs, hp, wp} from '../helpers/GlobalFunction';
 import {HeaderBar} from '../components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import Video from 'react-native-video';
+import database, { firebase } from '@react-native-firebase/database';
 
 const HomeScreen = ({navigation}) => {
   const [like, setLike] = useState('');
-  const [save, setSave] = useState('');
+  const [save, setSave] = useState(false);
+  const [postid,setPostid] = useState();
   const [firebaseImageData, setfirebaseImageData] = useState([]);
   const [videoData, setVideoData] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [comment, setComment] = useState('');
-
+  const [userId,setUserId] = useState('')
 
   useEffect(() => {
     imageData();
-  }, [2]);
+  }, []);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -42,6 +44,8 @@ const HomeScreen = ({navigation}) => {
   }, []);
 
   const imageData = async () => {
+    const uid = await AsyncStorage.getItem('UID');
+    setUserId(uid)
     let tempData = [];
     await firestore()
       .collection('User_Details')
@@ -50,18 +54,20 @@ const HomeScreen = ({navigation}) => {
         console.log(res.docs, 'hellohellohelloo');
         for (let x in res.docs) {
           for (let y in res.docs[x]._data.urldata) {
-            if (res.docs[x]._data.urldata[y].imageurl) {
+            if (res.docs[x]._data.urldata[y].mediaType) {
               tempData.push({
-                // like: res._data.urldata[it].imageurl.like,
-                username : res.docs[x]._data.userName,
-                path: res.docs[x]._data.urldata[y].imageurl.url,
+                vidoPath: res.docs[x]._data.urldata[y].url,
+                username: res.docs[x]._data.userName,
+                postId: res.docs[x]._data.urldata[y].postId,
+                // like: res._data.urldata[it].videourl.like,
                 id: y,
               });
             } else {
               tempData.push({
-                vidoPath: res.docs[x]._data.urldata[y].videourl.url,
-                username : res.docs[x]._data.userName,
-                // like: res._data.urldata[it].videourl.like,
+                // like: res._data.urldata[it].imageurl.like,
+                postId: res.docs[x]._data.urldata[y].postId,
+                username: res.docs[x]._data.userName,
+                path: res.docs[x]._data.urldata[y].url,
                 id: y,
               });
             }
@@ -70,11 +76,14 @@ const HomeScreen = ({navigation}) => {
         }
       });
   };
-  const onComment = ()=>{
-    
-  }
-
+const onLike = ()=>{
+  
+}
   const RenderItem = ({item}) => {
+    console.log(
+      item.postId,
+      'hsdfiuaghfiuhwfiuhfiujshfvfhik(*(*(*(*(*(*(*(*(*(*(*(*',
+    );
     return (
       <View style={styles.flatListViewStyle}>
         <View style={{flexDirection: 'row', width: '90%'}}>
@@ -107,15 +116,28 @@ const HomeScreen = ({navigation}) => {
         )}
         <View style={styles.buttonViewStyle}>
           <View style={styles.likeCommentStyle}>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                console.log(item.postId);
+                setPostid(item.postId);
+                try {
+                  const reference = firebase.app().database('https://myfirebasedemo-e68de-default-rtdb.firebaseio.com/').ref(`/Posts/Like/`);
+                  return reference.transaction(currentLikes => {
+                    if (currentLikes === null) return 1;
+                    return currentLikes + 1;
+                  });
+                  // reference.transaction((currentLike)=>currentLike+1);
+                } catch (error) {
+                  console.log(error);
+                }
+              }}>
               <Image
                 source={icon.heart}
-                style={{height: 30, width: 30}}
+                style={styles.likeButtonStyle}
                 resizeMode="contain"
               />
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setModalVisible(true)}>
+            <TouchableOpacity onPress={() => setModalVisible(true)}>
               <Image
                 source={icon.comment}
                 style={styles.buttonStyle1}
@@ -124,9 +146,31 @@ const HomeScreen = ({navigation}) => {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.savedPostStyle}>
+          <TouchableOpacity style={styles.savedPostStyle} 
+          onPress={async() => {
+            setSave(!save)
+            const savedData = await firestore().collection('User_Details').doc(userId).get();
+            console.log(savedData._data.savedPost[0].postId,"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+            for(let x in savedData._data.savedPost){
+              if(savedData._data.savedPost[x] == item.postId){
+               
+              }else{
+                setSave(false);
+              }
+            }
+
+            // firestore().collection('User_Details').doc(userId).update({
+            //   savedPost : firestore.FieldValue.arrayUnion({
+            //     url : item.path,
+            //     userName : item.username,
+            //     savedPostId : item.postId,
+            //   })
+            // })
+          }}
+          
+          >
             <Image
-              source={icon.save}
+              source={ save ? icon.fill_save : icon.save}
               style={styles.buttonStyle}
               resizeMode="contain"
             />
@@ -149,7 +193,7 @@ const HomeScreen = ({navigation}) => {
           />
         </View>
         <ScrollView
-          style={{marginTop: 20}}
+          style={styles.ScrollViewStyle}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }>
@@ -166,8 +210,7 @@ const HomeScreen = ({navigation}) => {
             visible={modalVisible}
             onRequestClose={() => {
               setModalVisible(!modalVisible);
-            }}
-            >
+            }}>
             <View
               style={{
                 justifyContent: 'center',
@@ -205,11 +248,11 @@ const styles = StyleSheet.create({
   flatListViewStyle: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 30,
+    marginVertical: hp(3.4),
   },
   ProfileStyle: {
-    height: 45,
-    width: 45,
+    height: hp(5.14),
+    width: wp(12),
     borderRadius: 100,
   },
   nameTextStyle: {
@@ -223,19 +266,19 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   buttonStyle1: {
-    height: 25,
-    width: 25,
+    height: hp(2.85),
+    width: wp(6.6),
     marginHorizontal: 15,
   },
   buttonStyle: {
-    height: 25,
-    width: 25,
+    height: hp(2.85),
+    width: wp(6.6),
   },
   postStyle: {
-    height: 200,
+    height: hp(22.85),
     width: '90%',
     borderRadius: 14,
-    marginVertical: 15,
+    marginVertical: wp(4),
   },
   headerFontStyle: {
     fontSize: fs(22, 812),
@@ -243,7 +286,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   savedPostStyle: {
-    left: 240,
+    left: wp(61.5),
   },
   likeCommentStyle: {
     flexDirection: 'row',
@@ -280,7 +323,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   modalText: {
-    marginBottom: 15,
+    marginBottom: hp(1.7),
     textAlign: 'center',
+  },
+  likeButtonStyle: {
+    height: hp(3.4),
+    width: wp(8),
+  },
+  ScrollViewStyle: {
+    marginTop: hp(2.2),
   },
 });
