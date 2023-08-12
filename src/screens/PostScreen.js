@@ -19,6 +19,8 @@ import ImagePicker from 'react-native-image-crop-picker';
 import Video from 'react-native-video';
 import {utils} from '@react-native-firebase/app';
 import storage from '@react-native-firebase/storage';
+import {generateUUID} from '../helpers/RandomIdGenerator';
+import TimeAgo from '@andordavoti/react-native-timeago';
 
 const PostScreen = ({navigation}) => {
   const [name, setName] = useState('');
@@ -36,6 +38,7 @@ const PostScreen = ({navigation}) => {
   const [path, setPath] = useState();
   const [imageurl, setImageurl] = useState({});
   const [videourl, setVideourl] = useState({});
+
   useEffect(() => {
     getUid();
   });
@@ -105,14 +108,14 @@ const PostScreen = ({navigation}) => {
 
     try {
       if (imageData) {
+        const now = new Date();
+        console.log(now);
         await storage().ref(filename).putFile(path);
         await storage()
           .ref(filename)
           .getDownloadURL()
           .then(res => {
-            const now = new Date();
-            const microseconds = performance.now() * 1000; // Convert milliseconds to microseconds
-            const formattedTime = `${now.toISOString().slice(11, 19)}.${microseconds.toFixed(0).slice(-6)}`
+            const uuid = generateUUID(20);
             console.log('====================================');
             console.log(imageurl, '****(*(*(*(*(*(*(*(*(*(');
             console.log('====================================');
@@ -122,15 +125,20 @@ const PostScreen = ({navigation}) => {
               .doc(uidValue)
               .update({
                 urldata: firestore.FieldValue.arrayUnion({
-                  url: res,
-                  like: 5,
-                  location: location,
-                  caption: caption,
-                  postId : formattedTime
+                  postId: uuid,
                 }),
               })
-              .then((response) => {
-                console.log(response,"fhwiefhiweur121243446723447634");
+              .then(response => {
+                firestore().collection('Post').doc(uuid).set({
+                  userName : userName,
+                 
+                  caption: caption,
+                  url: res,
+                  location: location,
+                  uid : uidValue,
+                  mediaType: 'image',
+                });
+                console.log(response, 'fhwiefhiweur121243446723447634');
                 setImageData(null);
               });
           });
@@ -144,25 +152,27 @@ const PostScreen = ({navigation}) => {
           .ref(filename)
           .getDownloadURL()
           .then(res => {
-            const now = new Date();
-            const microseconds = performance.now() * 1000; // Convert milliseconds to microseconds
-            const formattedTime = `${now.toISOString().slice(11, 19)}.${microseconds.toFixed(0).slice(-6)}`
-           
+            const uuid = generateUUID(20);
+
             firestore()
               .collection('User_Details')
               .doc(uidValue)
               .update({
                 urldata: firestore.FieldValue.arrayUnion({
-                  url: res,
-                  like: 5,
-                  location: location,
-                  caption: caption,
-                  postId : formattedTime,
-                  mediaType : "video"
+                  postId: uuid,
                 }),
               })
-              .then(res => {
-                console.log(res);
+              .then(response => {
+                firestore().collection('Post').doc(uuid).set({
+                  userName : userName,
+                  caption: caption,
+                  isLikedUser:[],
+                  comment : [],
+                  url: res,
+                  location: location,
+                  uid : uidValue,
+                });
+                console.log(response);
               });
           });
         console.log('file upload success!');
@@ -279,6 +289,7 @@ const PostScreen = ({navigation}) => {
             style={styles.postButtonStyle}>
             <Text style={styles.postButtonTextStyle}>Post</Text>
           </TouchableOpacity>
+          {/* <TimeAgo style={{ fontWeight: 'bold', color: '#00000060' ,fontSize: 12}} dateTo={64045030} /> */}
         </View>
       </SafeAreaView>
     </LinearGradient>

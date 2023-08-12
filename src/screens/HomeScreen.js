@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useId, useState} from 'react';
 import {icon, image} from '../helpers/ImageHelper';
 import LinearGradient from 'react-native-linear-gradient';
 import {fs, hp, wp} from '../helpers/GlobalFunction';
@@ -19,167 +19,116 @@ import {HeaderBar} from '../components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import Video from 'react-native-video';
-import database, { firebase } from '@react-native-firebase/database';
+import database, {firebase} from '@react-native-firebase/database';
+import auth from '@react-native-firebase/auth';
+import { FlashList } from "@shopify/flash-list";
 
 const HomeScreen = ({navigation}) => {
-  const [like, setLike] = useState('');
+  const [likeIs, setLikeIs] = useState('');
   const [save, setSave] = useState(false);
-  const [postid,setPostid] = useState();
+  const [postid, setPostid] = useState();
   const [firebaseImageData, setfirebaseImageData] = useState([]);
   const [videoData, setVideoData] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [comment, setComment] = useState('');
-  const [userId,setUserId] = useState('')
+  const [userId, setUserId] = useState('');
+  const [color, setColor] = useState('white');
 
+  console.log(firebaseImageData);
   useEffect(() => {
-    imageData();
-  }, []);
+    // imageData();
+    const imageData = firestore()
+      .collection('Post')
+      .onSnapshot(querySnapshot => {
+        const items = [];
+        querySnapshot.forEach(documentSnapshot => {
+          items.push({
+            id: documentSnapshot.id,
+            ...documentSnapshot.data(),
+          });
+        });
+        let tempData = [];
+        const data = items.map(x => {
+          console.log(x.mediaType);
+          if (x.mediaType) {
+            tempData.push({
+              postid: x.id,
+              path: x.url,
+              isLikedUser: x.isLikedUser,
+              commentData : x.comment,
+              count: x.isLikedUser.length,
+              caption: x.caption,
+              location: x.location,
+              username: x.userName,
+              uidValue: x.uid,
+            });
+          } else {
+            tempData.push({
+              postid: x.id,
+              vidoPath: x.url,
+              caption: x.caption,
+              location: x.location,
+              username: x.userName,
+              commentData : x.comment,
+              count: x.isLikedUser.length,
+              uidValue: x.uid,
+              isLikedUser: x.isLikedUser,
+            });
+          }
+          setfirebaseImageData(tempData);
+        });
+      });
 
+    return () => imageData();
+  }, []);
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
   }, []);
-
-  const imageData = async () => {
-    const uid = await AsyncStorage.getItem('UID');
-    setUserId(uid)
-    let tempData = [];
-    await firestore()
-      .collection('User_Details')
+  const onLike = postId => {
+    firestore()
+      .collection('Post')
+      .doc(postId)
       .get()
-      .then(res => {
-        console.log(res.docs, 'hellohellohelloo');
-        for (let x in res.docs) {
-          for (let y in res.docs[x]._data.urldata) {
-            if (res.docs[x]._data.urldata[y].mediaType) {
-              tempData.push({
-                vidoPath: res.docs[x]._data.urldata[y].url,
-                username: res.docs[x]._data.userName,
-                postId: res.docs[x]._data.urldata[y].postId,
-                // like: res._data.urldata[it].videourl.like,
-                id: y,
-              });
-            } else {
-              tempData.push({
-                // like: res._data.urldata[it].imageurl.like,
-                postId: res.docs[x]._data.urldata[y].postId,
-                username: res.docs[x]._data.userName,
-                path: res.docs[x]._data.urldata[y].url,
-                id: y,
-              });
-            }
-            setfirebaseImageData(tempData);
-          }
-        }
+      .then(async res => {
+        const userId = auth().currentUser.uid;
+        await firestore()
+          .collection('Post')
+          .doc(postId)
+          .update({
+            isLikedUser: [...res._data.isLikedUser, userId],
+          });
       });
   };
-const onLike = ()=>{
-  
-}
-  const RenderItem = ({item}) => {
-    console.log(
-      item.postId,
-      'hsdfiuaghfiuhwfiuhfiujshfvfhik(*(*(*(*(*(*(*(*(*(*(*(*',
-    );
-    return (
-      <View style={styles.flatListViewStyle}>
-        <View style={{flexDirection: 'row', width: '90%'}}>
-          <Image
-            source={icon.account}
-            style={styles.ProfileStyle}
-            resizeMode="stretch"
-          />
-          <Text style={styles.nameTextStyle}>
-            {item.username}
-            {'\n'}
-            <Text style={{fontWeight: 'normal', color: 'grey'}}>
-              surat,india
-            </Text>
-          </Text>
-        </View>
-        {item.path ? (
-          <Image
-            source={{uri: item.path}}
-            style={styles.postStyle}
-            resizeMode="stretch"
-          />
-        ) : (
-          <Video
-            source={{uri: item.vidoPath}}
-            style={styles.postStyle}
-            controls={true}
-            resizeMode="stretch"
-          />
-        )}
-        <View style={styles.buttonViewStyle}>
-          <View style={styles.likeCommentStyle}>
-            <TouchableOpacity
-              onPress={() => {
-                console.log(item.postId);
-                setPostid(item.postId);
-                try {
-                  const reference = firebase.app().database('https://myfirebasedemo-e68de-default-rtdb.firebaseio.com/').ref(`/Posts/Like/`);
-                  return reference.transaction(currentLikes => {
-                    if (currentLikes === null) return 1;
-                    return currentLikes + 1;
-                  });
-                  // reference.transaction((currentLike)=>currentLike+1);
-                } catch (error) {
-                  console.log(error);
-                }
-              }}>
-              <Image
-                source={icon.heart}
-                style={styles.likeButtonStyle}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setModalVisible(true)}>
-              <Image
-                source={icon.comment}
-                style={styles.buttonStyle1}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity style={styles.savedPostStyle} 
-          onPress={async() => {
-            setSave(!save)
-            const savedData = await firestore().collection('User_Details').doc(userId).get();
-            console.log(savedData._data.savedPost[0].postId,"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-            for(let x in savedData._data.savedPost){
-              if(savedData._data.savedPost[x] == item.postId){
-               
-              }else{
-                setSave(false);
-              }
-            }
-
-            // firestore().collection('User_Details').doc(userId).update({
-            //   savedPost : firestore.FieldValue.arrayUnion({
-            //     url : item.path,
-            //     userName : item.username,
-            //     savedPostId : item.postId,
-            //   })
-            // })
-          }}
-          
-          >
-            <Image
-              source={ save ? icon.fill_save : icon.save}
-              style={styles.buttonStyle}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
+  const UnLike = postId => {
+    firestore()
+      .collection('Post')
+      .doc(postId)
+      .get()
+      .then(async res => {
+        const D = await firestore().collection('Post').doc(postId).get();
+        const filteData = D._data.isLikedUser.filter(
+          a => a !== auth().currentUser.uid,
+        );
+        await firestore().collection('Post').doc(postId).update({
+          isLikedUser: filteData,
+        });
+      });
   };
-
+const onComment = (postId,userName)=>{
+    firestore().collection('Post').doc(postId).get().then(async res=>{
+      const userId = auth().currentUser.uid;
+      await firestore().collection('Post').doc(postId).update({
+        commentData : firestore.FieldValue.arrayUnion({
+              userName : userName,
+              comment : comment
+        })
+      })
+    })
+}
   return (
     <LinearGradient
       colors={['#FAF0FA', '#EFFAF4', '#EDF6FF']}
@@ -199,8 +148,91 @@ const onLike = ()=>{
           }>
           <FlatList
             data={firebaseImageData}
-            renderItem={({item}) => <RenderItem item={item} />}
-            // keyExtractor={item => item.id}
+            renderItem={({item, index}) => {
+              return (
+                <View style={styles.flatListViewStyle}>
+                  <View style={{flexDirection: 'row', width: '90%'}}>
+                    <Image
+                      source={icon.account}
+                      style={styles.ProfileStyle}
+                      resizeMode="stretch"
+                    />
+                    <Text style={styles.nameTextStyle}>
+                      {item.username}
+                      {'\n'}
+                      <Text style={{fontWeight: 'normal', color: 'grey'}}>
+                        {item.location}
+                      </Text>
+                    </Text>
+                  </View>
+                  {item.path ? (
+                    <Image
+                      source={{uri: item.path}}
+                      style={styles.postStyle}
+                      resizeMode="stretch"
+                    />
+                  ) : (
+                    <Video
+                      source={{uri: item.vidoPath}}
+                      style={styles.postStyle}
+                      controls={true}
+                      resizeMode="stretch"
+                    />
+                  )}
+                  <View style={styles.buttonViewStyle}>
+                    <View style={styles.likeCommentStyle}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          item.isLikedUser.some(
+                            a => a === auth().currentUser.uid,
+                          ) === true
+                            ? UnLike(item.postid)
+                            : onLike(item.postid);
+                        }}>
+                        <Image
+                          source={
+                            item.isLikedUser.some(
+                              a => a === auth().currentUser.uid,
+                            ) === true
+                              ? icon.fill_heart
+                              : icon.heart
+                          }
+                          style={styles.likeButtonStyle}
+                          resizeMode="contain"
+                        />
+                      </TouchableOpacity>
+                      <Text
+                          style={{
+                            fontWeight: 'normal',
+                            color: 'grey',
+                            fontSize: fs(20, 812),
+                            marginTop: hp(0.2),
+                            marginLeft: wp(0.7)
+                          }}>
+                          {item.count}
+                        </Text>
+                      <TouchableOpacity onPress={() => setModalVisible(true)}>
+                        <Image
+                          source={icon.comment}
+                          style={styles.buttonStyle1}
+                          resizeMode="contain"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.savedPostStyle}
+                      onPress={() => {}}>
+                      <Image
+                        source={save ? icon.fill_save : icon.save}
+                        style={styles.buttonStyle}
+                        resizeMode="contain"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              );
+            }}
+            keyExtractor={item => item.postId}
           />
         </ScrollView>
         <View>
@@ -210,7 +242,9 @@ const onLike = ()=>{
             visible={modalVisible}
             onRequestClose={() => {
               setModalVisible(!modalVisible);
-            }}>
+            }}
+            style={{width:'90%'}}
+            >
             <View
               style={{
                 justifyContent: 'center',
@@ -268,7 +302,7 @@ const styles = StyleSheet.create({
   buttonStyle1: {
     height: hp(2.85),
     width: wp(6.6),
-    marginHorizontal: 15,
+    marginHorizontal: wp(2),
   },
   buttonStyle: {
     height: hp(2.85),
@@ -333,4 +367,5 @@ const styles = StyleSheet.create({
   ScrollViewStyle: {
     marginTop: hp(2.2),
   },
+  
 });
