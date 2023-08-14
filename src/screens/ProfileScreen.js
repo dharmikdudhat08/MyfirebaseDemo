@@ -24,6 +24,7 @@ const ProfileScreen = ({navigation}) => {
   const [press2, setPress2] = useState(false);
   const [press3, setPress3] = useState(false);
   const [userName, setUserName] = useState('');
+  const [profilePic, setProfilePic] = useState('');
 
   // useEffect(() => {}, [press1, press2, press3]);
 
@@ -62,6 +63,7 @@ const ProfileScreen = ({navigation}) => {
       .doc(`${uid}`)
       .get()
       .then(user => {
+        setProfilePic(user._data.profilePic);
         // console.log('UID---->', user);
         setUserName(user._data.userName);
       });
@@ -98,7 +100,19 @@ const ProfileScreen = ({navigation}) => {
               <Text style={styles.followCountStyle}>46K</Text>
               <Text style={styles.followtextStyle}>Followers</Text>
             </View>
-            <ProfilePic imageStyle={styles.imageStyle} />
+            {!profilePic ? (
+              <Image
+                source={icon.account}
+                style={styles.imageStyle}
+                resizeMode="stretch"
+              />
+            ) : (
+              <Image
+                source={{uri: profilePic}}
+                style={styles.imageStyle}
+                resizeMode="stretch"
+              />
+            )}
             <View style={styles.followerStyle}>
               <Text style={styles.followCountStyle}>46</Text>
               <Text style={styles.followtextStyle}>Followings</Text>
@@ -176,22 +190,6 @@ const ProfileScreen = ({navigation}) => {
             <Videos />
           </View>
         )}
-
-        {/* {press1? (
-          <View style={styles.photosStyle}>
-            <All />
-          </View> ? (
-            press2
-          ) : (
-            <View style={styles.photosStyle}>
-              <Photos />
-            </View>
-          )
-        ) : (
-          <View style={styles.photosStyle}>
-            <Videos />
-          </View>
-        )} */}
       </SafeAreaView>
     </LinearGradient>
   );

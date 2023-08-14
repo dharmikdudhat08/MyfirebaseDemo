@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
-import {HeaderBar, ProfilePic} from '../components';
+import {HeaderBar, Profile, ProfilePic} from '../components';
 import {fs, hp, wp} from '../helpers/GlobalFunction';
 import {icon} from '../helpers/ImageHelper';
 import LinearGradient from 'react-native-linear-gradient';
@@ -45,20 +45,20 @@ const PostScreen = ({navigation}) => {
 
   const getUid = async () => {
     const userId = await AsyncStorage.getItem('UID');
-    console.log('uid=======>>>>', userId);
+    // console.log('uid=======>>>>', userId);
     setUidValue(userId);
 
-    console.log(userId, 'hellohellohello');
+    // console.log(userId, 'hellohellohello');
     await firestore()
       .collection('User_Details')
       .doc(userId)
       .get()
       .then(res => {
-        console.log('====================================');
-        console.log(res);
-        console.log('====================================');
-        console.log(res._data.name);
-        console.log(res._data.userName);
+        // console.log('====================================');
+        // console.log(res);
+        // console.log('====================================');
+        // console.log(res._data.name);
+        // console.log(res._data.userName);
         setName(res._data.name);
         setUserName(res._data.userName);
         setPhoneNo(res._data.phoneNo);
@@ -105,7 +105,7 @@ const PostScreen = ({navigation}) => {
   const onPostPress = async () => {
     setCount(count + 1);
     console.log('uid-----====----=-=-=-=-=-=>', uidValue);
-
+    const profilePic = await AsyncStorage.getItem('PROFILE_PIC')
     try {
       if (imageData) {
         const now = new Date();
@@ -130,12 +130,14 @@ const PostScreen = ({navigation}) => {
               })
               .then(response => {
                 firestore().collection('Post').doc(uuid).set({
-                  userName : userName,
-                 
+                  userName: userName,
+                  ProfilePic : profilePic,
                   caption: caption,
                   url: res,
                   location: location,
-                  uid : uidValue,
+                  uid: uidValue,
+                  isLikedUser: [],
+                  comment: [],
                   mediaType: 'image',
                 });
                 console.log(response, 'fhwiefhiweur121243446723447634');
@@ -164,13 +166,14 @@ const PostScreen = ({navigation}) => {
               })
               .then(response => {
                 firestore().collection('Post').doc(uuid).set({
-                  userName : userName,
+                  userName: userName,
+                  ProfilePic : profilePic,
                   caption: caption,
-                  isLikedUser:[],
-                  comment : [],
+                  isLikedUser: [],
+                  comment: [],
                   url: res,
                   location: location,
-                  uid : uidValue,
+                  uid: uidValue,
                 });
                 console.log(response);
               });
@@ -197,13 +200,13 @@ const PostScreen = ({navigation}) => {
             headerFontStyle={styles.headerFontStyle}
           />
         </View>
-        <View style={styles.profilePicViewStyle}>
-          <ProfilePic imageStyle={styles.imageStyle} />
-          <View style={{marginBottom: hp(1.5)}}>
-            <Text style={styles.fontStyle}>{userName}</Text>
-            <Text style={styles.fontStyle1}>{name}</Text>
-          </View>
-        </View>
+
+        <Profile
+          profilePicViewStyle={styles.profilePicViewStyle}
+          profileImageStyle={styles.imageStyle}
+          userNameFontStyle={styles.fontStyle}
+          nameFontStyle={styles.fontStyle1}
+        />
         <View style={styles.inputStyle}>
           <Image
             source={icon.location}

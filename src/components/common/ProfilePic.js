@@ -10,6 +10,7 @@ import {
 import { fs, hp, wp } from '../../helpers/GlobalFunction';
 import { icon, image } from '../../helpers/ImageHelper';
 import ImagePicker from 'react-native-image-crop-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfilePic = ({imageStyle}) => {
     const [imageData, setImageData] = useState('');
@@ -24,6 +25,7 @@ const ProfilePic = ({imageStyle}) => {
       }).then(async image => {
         console.log(image, "-=-=-=-=-=--=-");
         setImageData(image.path)
+        await AsyncStorage.setItem('PROFILE_PIC', `${image.path}`);
       });
 
     } catch (error) {
@@ -31,7 +33,7 @@ const ProfilePic = ({imageStyle}) => {
     }
   }
   return (
-    <TouchableOpacity>
+    <TouchableOpacity onPress={openGallary}>
     {!imageData ?
       <Image source={icon.account} style={imageStyle} resizeMode='stretch'/>
       :

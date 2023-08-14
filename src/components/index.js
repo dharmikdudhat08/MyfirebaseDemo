@@ -6,7 +6,7 @@ import Photos from "./GallaryComponents/Photos";
 import HeaderBarDiff from "./common/HeaderBarDiff";
 import Videos from "./GallaryComponents/Videos";
 import All from "./GallaryComponents/All";
-
+import Profile from "./common/Profile";
 export{
     ProfilePic,
     HeaderBar,
@@ -16,5 +16,6 @@ export{
     Videos,
     All,
     HeaderBarDiff,
+    Profile,
     
 }

@@ -24,6 +24,7 @@ export const icon = {
   back: require('../assets/icons/back.png'),
   mention: require('../assets/icons/mention.png'),
   logout: require('../assets/icons/logout.png'),
+  send : require('../assets/icons/send.png'),
 };
 export const image = {
   splash: require('../assets/images/splash.png'),

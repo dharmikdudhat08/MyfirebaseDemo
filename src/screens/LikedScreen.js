@@ -18,12 +18,12 @@ import firestore from '@react-native-firebase/firestore';
 import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
 const LikedScreen = () => {
   const [userName, setUserName] = useState('');
   const [originalName, setOriginalName] = useState('');
-  
   const uidValue = useSelector(state => state.idtoken);
-
+  
   useEffect(() => {
     name();
   });
@@ -56,10 +56,10 @@ const LikedScreen = () => {
             <Text style={styles.fontStyle1}>{originalName}</Text>
           </View>
         </View>
-       
         
       </SafeAreaView>
     </LinearGradient>
+    
   );
 };
 
@@ -98,5 +98,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     alignSelf: 'center',
   },
- 
 });

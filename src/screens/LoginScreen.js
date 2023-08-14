@@ -79,6 +79,7 @@ const LoginScreen = ({navigation}) => {
   };
 
   const onLogin = async () => {
+    const profilePic = await AsyncStorage.getItem('PROFILE_PIC')
     try {
       await auth()
         .signInWithEmailAndPassword(`${email}`, `${password}`)
@@ -97,6 +98,7 @@ const LoginScreen = ({navigation}) => {
                   userName: `${userName}`,
                   phoneNo: `${phoneNo}`,
                   uid: `${res.user.uid}`,
+                  profilePic : profilePic,
                 })
                 .then(async () => {
                   try {
