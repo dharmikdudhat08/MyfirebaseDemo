@@ -29,19 +29,37 @@ const Videos = () => {
       .collection('User_Details')
       .doc(`${uid}`)
       .get()
-      .then(res => {
-        for (let it in res._data.urldata) {
-          if (res._data.urldata[it].mediaType) {
-            tempData.push({
-              videourl: res._data.urldata[it].url,
-              id: it,
+      .then(user => {
+        let tempData = [];
+        for (let x in user._data.urldata) {
+          console.log(user?._data?.urldata[x]?.postId, 'helo');
+          firestore()
+            .collection('Post')
+            .doc(user?._data?.urldata[x]?.postId)
+            .get()
+            .then(res => {
+              console.log(res?._data?.url, '90909009');
+              if (!res?._data?.mediaType) {
+                tempData.push({
+                  postid: user?._data?.urldata[x]?.postId,
+                  videourl: res._data.url,
+                  profilepic: res._data.profilePic,
+                  SavedUser: res._data.SavedUser,
+                  isLikedUser: res._data.isLikedUser,
+                  comment: res._data.commentData,
+                  count: res._data.isLikedUser.length,
+                  commentCount: res._data.commentData.length,
+                  caption: res._data.caption,
+                  location: res._data.location,
+                  username: res._data.userName,
+                  uidValue: res._data.uid,
+                });
+              }
+              else{
+                null
+              }
+              setfirebaseImageData(tempData);
             });
-          }
-          setfirebaseImageData(tempData);
-          console.log(
-            tempData,
-            'hellogelkgjwkgjwkegjelkjgkejgewlkgjwkgjwlkgjwlgwk#######',
-          );
         }
       });
   };

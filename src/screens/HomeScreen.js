@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useCallback, useEffect, useId, useState} from 'react';
+import React, {useCallback, useEffect, useId, useMemo, useState} from 'react';
 import {icon, image} from '../helpers/ImageHelper';
 import LinearGradient from 'react-native-linear-gradient';
 import {fs, hp, wp} from '../helpers/GlobalFunction';
@@ -38,7 +38,6 @@ const HomeScreen = ({navigation}) => {
   const [phoneNo, setPhoneNo] = useState('');
   const [profilepic, setProfilePic] = useState('');
   const [firebaseCommentData, setFirebaseCommentData] = useState([]);
-
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
@@ -65,9 +64,11 @@ const HomeScreen = ({navigation}) => {
               postid: x.id,
               path: x.url,
               profilepic: x.profilePic,
+              SavedUser: x.SavedUser,
               isLikedUser: x.isLikedUser,
               comment: x.commentData,
               count: x.isLikedUser.length,
+              commentCount: x.commentData.length,
               caption: x.caption,
               location: x.location,
               username: x.userName,
@@ -83,6 +84,8 @@ const HomeScreen = ({navigation}) => {
               username: x.userName,
               commentData: x.comment,
               count: x.isLikedUser.length,
+              SavedUser: x.SavedUser,
+              commentCount: x.commentData.length,
               uidValue: x.uid,
               isLikedUser: x.isLikedUser,
             });
@@ -93,12 +96,57 @@ const HomeScreen = ({navigation}) => {
 
     return () => imageData();
   }, []);
+  const flatlistData = useMemo(()=>firebaseImageData, [firebaseImageData])
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
   }, []);
+  const onSave = async postId => {
+    console.log(postId,"9090909099")
+    const userId = auth().currentUser.uid;
+    firestore()
+      .collection('Post')
+      .doc(postId)
+      .get()
+      .then(async res => {
+        await firestore()
+          .collection('Post')
+          .doc(postId)
+          .update({
+            SavedUser: [...res._data.SavedUser, userId],
+          }).then(()=>{
+            firestore().collection('User_Details').doc(userId).update({
+              SavedPost : firestore.FieldValue.arrayUnion({
+                savedPost : postId,
+              })
+            })
+          });
+      });
+  };
+  const onUnSave = postId => {
+    console.log(postId,"unsave")
+    const userId = auth().currentUser.uid;
+    firestore()
+      .collection('Post')
+      .doc(postId)
+      .get()
+      .then(async res => {
+        const D = await firestore().collection('Post').doc(postId).get();
+        console.log(D._data.SavedUser)
+        const filteredData = D._data.SavedUser.filter(a => a !== auth().currentUser.uid);
+        await firestore().collection('Post').doc(postId).update({
+          SavedUser: filteredData,
+        }).then(()=>{
+          firestore().collection('User_Details').doc(userId).update({
+            SavedPost : firestore.FieldValue.arrayRemove({
+              savedPost : postId,
+            })
+          })
+        });
+      });
+  };
   const onLike = postId => {
     firestore()
       .collection('Post')
@@ -115,6 +163,7 @@ const HomeScreen = ({navigation}) => {
       });
   };
   const UnLike = postId => {
+    console.log(postId)
     firestore()
       .collection('Post')
       .doc(postId)
@@ -213,8 +262,9 @@ const HomeScreen = ({navigation}) => {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }>
           <FlatList
-            data={firebaseImageData}
+            data={flatlistData}
             renderItem={({item, index}) => {
+              // console.log(item.SavedUser,"0909090909")
               return (
                 <View style={styles.flatListViewStyle}>
                   <View style={{flexDirection: 'row', width: '90%'}}>
@@ -290,12 +340,32 @@ const HomeScreen = ({navigation}) => {
                           resizeMode="contain"
                         />
                       </TouchableOpacity>
+                      <Text
+                        style={{
+                          fontWeight: 'normal',
+                          color: 'grey',
+                          fontSize: fs(20, 812),
+                          marginTop: hp(0.08),
+                          // marginLeft: wp(0.4),
+                        }}>
+                        {item.commentCount}
+                      </Text>
                     </View>
                     <TouchableOpacity
                       style={styles.savedPostStyle}
-                      onPress={() => {}}>
+                      onPress={() => {
+                        item?.SavedUser?.some(
+                          a => a === auth().currentUser.uid,
+                        ) === true
+                          ? onUnSave(item.postid)
+                          : onSave(item.postid);
+                      }}>
                       <Image
-                        source={save ? icon.fill_save : icon.save}
+                        source={
+                          item?.SavedUser?.some(a => a === auth().currentUser.uid) === true
+                            ? icon.fill_save
+                            : icon.save
+                        }
                         style={styles.buttonStyle}
                         resizeMode="contain"
                       />
@@ -446,7 +516,7 @@ const styles = StyleSheet.create({
   buttonStyle1: {
     height: hp(2.85),
     width: wp(6.6),
-    marginHorizontal: wp(2),
+    marginHorizontal: wp(1.8),
   },
   buttonStyle: {
     height: hp(2.85),
@@ -464,7 +534,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   savedPostStyle: {
-    left: wp(61.5),
+    left: wp(59.5),
   },
   likeCommentStyle: {
     flexDirection: 'row',
