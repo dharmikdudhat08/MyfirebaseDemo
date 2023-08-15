@@ -44,6 +44,7 @@ const LikedScreen = () => {
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
+  
   useEffect(() => {
     // onScreen();
     const uid = auth().currentUser.uid;
@@ -54,18 +55,18 @@ const LikedScreen = () => {
       .doc(`${uid}`)
       .get()
       .then(async user => {
-        console.log('UID---->', user._data.SavedPost);
+        // console.log('UID---->', user._data.SavedPost);
         setUserName(user._data.userName);
         setOriginalName(user._data.name);
         let tempData = [];
         for(let x in user._data.SavedPost){
-          console.log(user._data.SavedPost[x].savedPost)
+          // console.log(user._data.SavedPost[x].savedPost)
           firestore()
             .collection('Post')
             .doc(user._data.SavedPost[x].savedPost)
             .get()
             .then(res => {
-              console.log(res._data.url, '90909009');
+              // console.log(res._data.url, '90909009');
               if (res._data.mediaType) {
                 tempData.push({
                   postid:user._data.SavedPost[x].savedPost,
@@ -83,7 +84,7 @@ const LikedScreen = () => {
                 });
               } else {
                 tempData.push({
-                  postid: x.savedPost,
+                  postid: user._data.SavedPost[x].savedPost,
                   vidoPath: res._data.url,
                   profilepic: res._data.profilePic,
                   SavedUser: res._data.SavedUser,
@@ -98,13 +99,14 @@ const LikedScreen = () => {
                 });
               }
               setfirebaseImageData(tempData);
-              // console.log(firebaseImageData)
+              // 
             });
         }
        
     })
-
   }, []);
+  // }, [firebaseImageData]);
+              // console.log(firebaseImageData)
   
   // const onScreen = async () => {
   //   const uid = auth().currentUser.uid;
@@ -151,7 +153,7 @@ const LikedScreen = () => {
       .get()
       .then(async res => {
         const D = await firestore().collection('Post').doc(postId).get();
-        console.log(D, 'heyheyheyheyheyhey');
+        // console.log(D, 'heyheyheyheyheyhey');
         const filteredData = D._data.SavedUser.filter(
           a => a !== auth().currentUser.uid,
         );

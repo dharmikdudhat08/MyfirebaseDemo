@@ -16,50 +16,101 @@ import firestore from '@react-native-firebase/firestore';
 import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {presets} from '../../babel.config';
+import auth from '@react-native-firebase/auth';
 
 const AlluserList = () => {
   const [userName, setUserName] = useState('');
   const [originalName, setOriginalName] = useState('');
   const [allUserData, setAllUserData] = useState();
-  const [userID, setUserID] = useState();
   const [count, setCount] = useState(null);
   const [followuid, setFollowuid] = useState('');
   const [following, setFollowing] = useState(false);
-  const [perticularIndex,setPerticularIndex] = useState(null)
-
-
-  //   const update=(items)=>{
-  //     // console.log("1111111",items);
-  //   allUserData.map((item)=>{
-  //     console.log("fadeqdfeqwffafa",item._data.uid);
-  //     const a=items==item._data.uid
-  //     // console.log("555555",a);
-  //     if(a){
-  //       setFollowing(true)
-  //     }
-
-  //   })
-  // }
+  const [perticularIndex, setPerticularIndex] = useState(null);
 
   useEffect(() => {
     name();
-  }, []);
+  }, [allUserData]);
 
   const name = async () => {
     const users = await firestore().collection('User_Details').get();
-    console.log('====================================');
-    console.log('=-=-=--=-=-=-', users?.docs);
+    // console.log('====================================');
+    // console.log('=-=-=--=-=-=-', users?.docs);
     setAllUserData(users?.docs);
-    console.log('====================================');
-    const uid = await AsyncStorage.getItem('UID');
+    // console.log('====================================');
+    const uid = auth().currentUser.uid;
     const user = await firestore()
       .collection('User_Details')
       .doc(`${uid}`)
       .get();
-    console.log('UID---->', user);
+    // console.log('UID---->', user);
     setUserName(user._data.userName);
     setOriginalName(user._data.name);
-    setUserID(user._data.uid);
+  };
+
+  const onFollow = uId => {
+    const userId = auth().currentUser.uid;
+    try {
+      firestore()
+        .collection('User_Details')
+        .doc(uId)
+        .get()
+        .then(async res => {
+          await firestore()
+            .collection('User_Details')
+            .doc(uId)
+            .update({
+              followers: [...res._data.followers, userId],
+            });
+        })
+        .then(async () => {
+          await firestore()
+            .collection('User_Details')
+            .doc(userId)
+            .get()
+            .then(async response => {
+              await firestore()
+                .collection('User_Details')
+                .doc(userId)
+                .update({
+                  following: [...response._data.following, uId],
+                });
+            });
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const onUnFollow = uId => {
+    const userId = auth().currentUser.uid;
+    console.log(uId);
+    firestore()
+      .collection('User_Details')
+      .doc(uId)
+      .get()
+      .then(async res => {
+        const D = await firestore().collection('User_Details').doc(uId).get();
+        const filterData = D._data.followers.filter(
+          a => a !== auth().currentUser.uid,
+        );
+        console.log(filterData, '(*)(*)(*)(*)(*)(*)(*)');
+        await firestore().collection('User_Details').doc(uId).update({
+          followers: filterData,
+        });
+      })
+      .then(async () => {
+        await firestore()
+          .collection('User_Details')
+          .doc(userId)
+          .get()
+          .then(async response => {
+            const filteredData = response._data.following.filter(
+              a => a !== uId,
+            );
+            await firestore().collection('User_Details').doc(userId).update({
+              following: filteredData,
+            });
+          });
+      });
   };
 
   return (
@@ -80,8 +131,7 @@ const AlluserList = () => {
         <FlatList
           data={allUserData}
           renderItem={({item, index}) => {
-           
-            if (item?._data?.uid != userID) {
+            if (item?._data?.uid != auth().currentUser.uid) {
               return (
                 <View
                   style={{
@@ -101,55 +151,23 @@ const AlluserList = () => {
                   </View>
 
                   <TouchableOpacity
-                  
-                    onPress={
-                      async () => {
-                        console.log('====================================');
-                        console.log(item);
-                        console.log('====================================');
-                      // setPerticularIndex(index)
-                      // console.log(
-                      //   '====================================',
-                      //   index,
-                      // );
-                      // console.log(
-                      //   '=====-=-=-===-=-=-=-=-=-=-=>>>>>>>>',
-                      //   item._data.uid,
-                      // );
-                      // if( index == perticularIndex){
-                      //   setAllUserData([...allUserData,])
-                      // }
-
-                      // if (following) {
-                      //   // setCount(count - 1);
-
-                      //   setFollowing(false);
-                      //   // await firestore()
-                      //   //   .collection('User_Details')
-                      //   //   .doc(`${item._data.uid}`)
-                      //   //   .update({
-                      //   //     followers: count,
-                      //   //   });
-                      // } else {
-                      //   // setCount(count + 1);
-
-                      //   setFollowing(true);
-                      //   // await firestore()
-                      //   //   .collection('User_Details')
-                      //   //   .doc(`${item._data.uid}`)
-                      //   //   .update({
-                      //   //     followers: count,
-                      //   //   });
-                      // }
+                    onPress={() => {
+                      item?._data?.followers.some(
+                        a => a === auth().currentUser.uid,
+                      ) === true
+                        ? onUnFollow(item?._data?.uid)
+                        : onFollow(item?._data?.uid);
                     }}
-                    
                     style={
-                    //  index == perticularIndex
-                    item?._data?.Fuid
-                     ? styles.followbuttonStyle1
+                      item?._data?.followers.some(
+                        a => a === auth().currentUser.uid,
+                      ) === true
+                        ? styles.followbuttonStyle1
                         : styles.followbuttonStyle
                     }>
-                    {index == perticularIndex ? (
+                    {item?._data?.followers.some(
+                      a => a === auth().currentUser.uid,
+                    ) === true ? (
                       <Text style={styles.followButtonFontStyle1}>
                         Following
                       </Text>
@@ -241,6 +259,10 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   },
+  followButtonFontStyle1: {
+    color: 'black',
+    fontWeight: 'bold',
+  },
   followbuttonStyle1: {
     height: hp(3.5),
     width: wp(22),
@@ -250,7 +272,6 @@ const styles = StyleSheet.create({
     marginTop: hp(4),
     borderWidth: 1,
     marginRight: wp(5.3),
-    backgroundColor:"red"
   },
   followButtonFontStyle1: {
     fontWeight: 'bold',
