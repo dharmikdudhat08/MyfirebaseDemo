@@ -11,6 +11,8 @@ import EditScreen from '../screens/EditScreen';
 import FillAuthenticdetail from '../screens/FillAuthenticdetail';
 import AlluserList from '../screens/AlluserList';
 import SplashScreen from '../screens/SplashScreen';
+import ChatScreen from '../screens/ChatScreen';
+import MessageScreen from '../screens/MessageScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -52,6 +54,14 @@ const StackNavigation = () => {
         <Stack.Screen
          name="AllUser" 
          component={AlluserList} 
+         />
+        <Stack.Screen
+         name="Chat" 
+         component={ChatScreen} 
+         />
+        <Stack.Screen
+         name="Message" 
+         component={MessageScreen} 
          />
       </Stack.Navigator>
     </NavigationContainer>

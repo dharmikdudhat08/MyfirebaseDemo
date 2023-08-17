@@ -47,9 +47,9 @@ const HomeScreen = ({navigation}) => {
     // imageData();
     const imageData = firestore()
       .collection('Post')
-      .onSnapshot(querySnapshot => {
+      .onSnapshot(conso => {
         const items = [];
-        querySnapshot.forEach(documentSnapshot => {
+        conso.forEach(documentSnapshot => {
           items.push({
             id: documentSnapshot.id,
             ...documentSnapshot.data(),
@@ -96,7 +96,7 @@ const HomeScreen = ({navigation}) => {
 
     return () => imageData();
   }, []);
-  const flatlistData = useMemo(()=>firebaseImageData, [firebaseImageData])
+  const flatlistData = useMemo(() => firebaseImageData, [firebaseImageData]);
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setTimeout(() => {
@@ -104,7 +104,7 @@ const HomeScreen = ({navigation}) => {
     }, 1000);
   }, []);
   const onSave = async postId => {
-    console.log(postId,"9090909099")
+    console.log(postId, '9090909099');
     const userId = auth().currentUser.uid;
     firestore()
       .collection('Post')
@@ -116,17 +116,21 @@ const HomeScreen = ({navigation}) => {
           .doc(postId)
           .update({
             SavedUser: [...res._data.SavedUser, userId],
-          }).then(()=>{
-            firestore().collection('User_Details').doc(userId).update({
-              SavedPost : firestore.FieldValue.arrayUnion({
-                savedPost : postId,
-              })
-            })
+          })
+          .then(() => {
+            firestore()
+              .collection('User_Details')
+              .doc(userId)
+              .update({
+                SavedPost: firestore.FieldValue.arrayUnion({
+                  savedPost: postId,
+                }),
+              });
           });
       });
   };
   const onUnSave = postId => {
-    console.log(postId,"unsave")
+    console.log(postId, 'unsave');
     const userId = auth().currentUser.uid;
     firestore()
       .collection('Post')
@@ -134,17 +138,26 @@ const HomeScreen = ({navigation}) => {
       .get()
       .then(async res => {
         const D = await firestore().collection('Post').doc(postId).get();
-        console.log(D._data.SavedUser)
-        const filteredData = D._data.SavedUser.filter(a => a !== auth().currentUser.uid);
-        await firestore().collection('Post').doc(postId).update({
-          SavedUser: filteredData,
-        }).then(()=>{
-          firestore().collection('User_Details').doc(userId).update({
-            SavedPost : firestore.FieldValue.arrayRemove({
-              savedPost : postId,
-            })
+        console.log(D._data.SavedUser);
+        const filteredData = D._data.SavedUser.filter(
+          a => a !== auth().currentUser.uid,
+        );
+        await firestore()
+          .collection('Post')
+          .doc(postId)
+          .update({
+            SavedUser: filteredData,
           })
-        });
+          .then(() => {
+            firestore()
+              .collection('User_Details')
+              .doc(userId)
+              .update({
+                SavedPost: firestore.FieldValue.arrayRemove({
+                  savedPost: postId,
+                }),
+              });
+          });
       });
   };
   const onLike = postId => {
@@ -163,7 +176,7 @@ const HomeScreen = ({navigation}) => {
       });
   };
   const UnLike = postId => {
-    console.log(postId)
+    console.log(postId);
     firestore()
       .collection('Post')
       .doc(postId)
@@ -256,6 +269,19 @@ const HomeScreen = ({navigation}) => {
             // drawerOpen={()=>navigation.openDrawer()}
           />
         </View>
+        <TouchableOpacity
+          style={{left: 340, marginTop: 60, position: 'absolute'}}
+          onPress={()=>
+            navigation.navigate('Message')
+          }
+          >
+          <Image
+            source={icon.chat}
+            style={{height: 30, width: 30}}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+
         <ScrollView
           style={styles.ScrollViewStyle}
           refreshControl={
@@ -362,7 +388,9 @@ const HomeScreen = ({navigation}) => {
                       }}>
                       <Image
                         source={
-                          item?.SavedUser?.some(a => a === auth().currentUser.uid) === true
+                          item?.SavedUser?.some(
+                            a => a === auth().currentUser.uid,
+                          ) === true
                             ? icon.fill_save
                             : icon.save
                         }

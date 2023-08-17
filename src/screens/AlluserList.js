@@ -6,10 +6,11 @@ import {
   Text,
   TouchableOpacity,
   View,
+  TextInput,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {HeaderBar, HeaderBarDiff, Photos, ProfilePic} from '../components';
-import {image} from '../helpers/ImageHelper';
+import {icon, image} from '../helpers/ImageHelper';
 import {fs, hp, wp} from '../helpers/GlobalFunction';
 import LinearGradient from 'react-native-linear-gradient';
 import firestore from '@react-native-firebase/firestore';
@@ -26,28 +27,20 @@ const AlluserList = () => {
   const [followuid, setFollowuid] = useState('');
   const [following, setFollowing] = useState(false);
   const [perticularIndex, setPerticularIndex] = useState(null);
+  const [updatedData, setUpdatedData] = useState([]);
+  // const []
 
   useEffect(() => {
     name();
-  }, [allUserData]);
+  }, [allUserData,updatedData]);
 
   const name = async () => {
-    const users = await firestore().collection('User_Details').get();
-    // console.log('====================================');
-    // console.log('=-=-=--=-=-=-', users?.docs);
-    setAllUserData(users?.docs);
-    // console.log('====================================');
-    const uid = auth().currentUser.uid;
-    const user = await firestore()
-      .collection('User_Details')
-      .doc(`${uid}`)
-      .get();
-    // console.log('UID---->', user);
-    setUserName(user._data.userName);
-    setOriginalName(user._data.name);
+    const user = await firestore().collection('User_Details').get();
+    setAllUserData(user?.docs);
   };
 
   const onFollow = uId => {
+    console.log(uId,"follow")
     const userId = auth().currentUser.uid;
     try {
       firestore()
@@ -82,14 +75,14 @@ const AlluserList = () => {
   };
   const onUnFollow = uId => {
     const userId = auth().currentUser.uid;
-    console.log(uId);
+    console.log(uId,"UnFollow");
     firestore()
       .collection('User_Details')
       .doc(uId)
       .get()
       .then(async res => {
         const D = await firestore().collection('User_Details').doc(uId).get();
-        const filterData = D._data.followers.filter(
+        const filterData = D?._data?.followers?.filter(
           a => a !== auth().currentUser.uid,
         );
         console.log(filterData, '(*)(*)(*)(*)(*)(*)(*)');
@@ -112,7 +105,26 @@ const AlluserList = () => {
           });
       });
   };
-
+  const handleSearch = text => {
+    const formattedQuery = text.toLowerCase();
+    // console.log(allUserData, '$$$$$$$%$%$%$%$%$%$%');
+    let tempData = [];
+    for (let x in allUserData) {
+      tempData.push({
+        profilePic: allUserData[x]._data.profilePic,
+        userName: allUserData[x]._data.userName,
+        name: allUserData[x]._data.name,
+        uid: allUserData[x]._data.uid,
+        following: allUserData[x]._data.following,
+        followers: allUserData[x]._data.followers,
+      });
+    }
+    const filteredData = tempData.filter(item =>
+      item.userName.includes(formattedQuery),
+    );
+    console.log(filteredData);
+    setUpdatedData(filteredData);
+  };
   return (
     <LinearGradient
       colors={['#FAF0FA', '#EFFAF4', '#EDF6FF']}
@@ -121,17 +133,30 @@ const AlluserList = () => {
         <View>
           <HeaderBarDiff name={'Suggested people'} />
         </View>
-        <View style={styles.profilePicViewStyle1}>
-          <ProfilePic imageStyle={styles.imageStyle1} />
-          <View style={{marginBottom: hp(1.5)}}>
-            <Text style={styles.fontStyle}>{userName}</Text>
-            <Text style={styles.fontStyle1}>{originalName}</Text>
-          </View>
+        <View style={styles.inputStyle}>
+          <Image
+            source={icon.search}
+            style={{height: 30, width: 30, tintColor: 'grey'}}
+            resizeMode="contain"
+          />
+          <TextInput
+            placeholder="Search"
+            autoCapitalize="none"
+            autoCorrect={false}
+            fontSize={fs(20, 812)}
+            placeholderTextColor={'#D3D3D3'}
+            style={{marginHorizontal: 10, width: '70%'}}
+            onChangeText={txt => handleSearch(txt)}
+          />
         </View>
         <FlatList
-          data={allUserData}
+          data={updatedData  ? updatedData : allUserData}
           renderItem={({item, index}) => {
-            if (item?._data?.uid != auth().currentUser.uid) {
+            if (
+              updatedData
+                ? item?.uid != auth().currentUser.uid
+                : item?._data?.uid != auth().currentUser.uid
+            ) {
               return (
                 <View
                   style={{
@@ -142,32 +167,54 @@ const AlluserList = () => {
                     <ProfilePic imageStyle={styles.imageStyle} />
                     <View style={{marginBottom: hp(1.5)}}>
                       <Text style={styles.followingFontStyle}>
-                        {item?._data?.userName}
+                        {updatedData ? item.userName : item?._data?.userName}
                       </Text>
                       <Text style={styles.followingFontStyle1}>
-                        {item?._data?.name}
+                        {updatedData ? item.name : item?._data?.name}
                       </Text>
                     </View>
                   </View>
 
                   <TouchableOpacity
                     onPress={() => {
-                      item?._data?.followers.some(
-                        a => a === auth().currentUser.uid,
-                      ) === true
-                        ? onUnFollow(item?._data?.uid)
-                        : onFollow(item?._data?.uid);
+                      updatedData
+                        ? item?.followers.some(
+                            a => a === auth().currentUser.uid,
+                          ) === true
+                          ? onUnFollow(item?.uid)
+                          : onFollow(item?.uid)
+                        : item?._data?.followers.some(
+                            a => a === auth().currentUser.uid,
+                          ) === true
+                        ? onUnFollow(item?._data.uid)
+                        : onFollow(item?._data.uid);
                     }}
                     style={
-                      item?._data?.followers.some(
-                        a => a === auth().currentUser.uid,
-                      ) === true
+                      updatedData
+                        ? item?.followers.some(
+                            a => a === auth().currentUser.uid,
+                          ) === true
+                          ? styles.followbuttonStyle1
+                          : styles.followbuttonStyle
+                        : item?._data?.followers.some(
+                            a => a === auth().currentUser.uid,
+                          ) === true
                         ? styles.followbuttonStyle1
                         : styles.followbuttonStyle
                     }>
-                    {item?._data?.followers.some(
-                      a => a === auth().currentUser.uid,
-                    ) === true ? (
+                    {updatedData ? (
+                      item?.followers.some(
+                        a => a === auth().currentUser.uid,
+                      ) === true ? (
+                        <Text style={styles.followButtonFontStyle1}>
+                          Following
+                        </Text>
+                      ) : (
+                        <Text style={styles.followButtonFontStyle}>Follow</Text>
+                      )
+                    ) : item?._data?.followers.some(
+                        a => a === auth().currentUser.uid,
+                      ) === true ? (
                       <Text style={styles.followButtonFontStyle1}>
                         Following
                       </Text>
@@ -181,7 +228,7 @@ const AlluserList = () => {
               null;
             }
           }}
-          keyExtractor={item => item._data.uid}
+          keyExtractor={item => item._data?.uid}
         />
       </SafeAreaView>
     </LinearGradient>
@@ -275,5 +322,17 @@ const styles = StyleSheet.create({
   },
   followButtonFontStyle1: {
     fontWeight: 'bold',
+  },
+  inputStyle: {
+    height: hp(5.38),
+    width: '90%',
+    borderWidth: 1,
+    borderColor: 'grey',
+    borderRadius: 10,
+    alignItems: 'center',
+    alignSelf: 'center',
+    paddingLeft: wp(5),
+    marginTop: hp(3),
+    flexDirection: 'row',
   },
 });

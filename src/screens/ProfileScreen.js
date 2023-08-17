@@ -15,16 +15,20 @@ import {fs, hp, wp} from '../helpers/GlobalFunction';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import {useSelector} from 'react-redux';
+import auth from '@react-native-firebase/auth';
+
 
 const ProfileScreen = ({navigation}) => {
   useEffect(() => {
     name();
-  });
+  }),[];
   const [press1, setPress1] = useState(true);
   const [press2, setPress2] = useState(false);
   const [press3, setPress3] = useState(false);
   const [userName, setUserName] = useState('');
   const [profilePic, setProfilePic] = useState('');
+  const [followersCount,setFollowersCount] = useState();
+  const [followingCount,setFollowingCount] = useState();
 
   // useEffect(() => {}, [press1, press2, press3]);
 
@@ -54,7 +58,7 @@ const ProfileScreen = ({navigation}) => {
   };
 
   const name = async () => {
-    const uid = await AsyncStorage.getItem('UID');
+    const uid =auth().currentUser.uid;
     // console.log('====================================');
     // console.log(uid);
     // console.log('====================================');
@@ -64,6 +68,9 @@ const ProfileScreen = ({navigation}) => {
       .get()
       .then(user => {
         setProfilePic(user._data.profilePic);
+        console.log(user._data.profilePic)
+        setFollowersCount(user._data.followers.length)
+        setFollowingCount(user._data.following.length)
         // console.log('UID---->', user);
         setUserName(user._data.userName);
       });
@@ -96,10 +103,10 @@ const ProfileScreen = ({navigation}) => {
         </View>
         <View>
           <View style={styles.profileViewStyle}>
-            <View style={styles.followerStyle}>
-              <Text style={styles.followCountStyle}>46K</Text>
+            <TouchableOpacity style={styles.followerStyle}>
+              <Text style={styles.followCountStyle}>{followersCount}</Text>
               <Text style={styles.followtextStyle}>Followers</Text>
-            </View>
+            </TouchableOpacity>
             {!profilePic ? (
               <Image
                 source={icon.account}
@@ -113,10 +120,10 @@ const ProfileScreen = ({navigation}) => {
                 resizeMode="stretch"
               />
             )}
-            <View style={styles.followerStyle}>
-              <Text style={styles.followCountStyle}>46</Text>
+            <TouchableOpacity style={styles.followerStyle}>
+              <Text style={styles.followCountStyle}>{followingCount}</Text>
               <Text style={styles.followtextStyle}>Followings</Text>
-            </View>
+            </TouchableOpacity>
           </View>
           <View style={styles.userNameStyle}>
             <Text style={styles.nameFontStyle}>{userName}</Text>

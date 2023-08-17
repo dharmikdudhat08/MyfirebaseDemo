@@ -25,6 +25,8 @@ export const icon = {
   mention: require('../assets/icons/mention.png'),
   logout: require('../assets/icons/logout.png'),
   send : require('../assets/icons/send.png'),
+  search : require('../assets/icons/magnifying-glass.png'),
+  chat : require('../assets/icons/message_4302296.png'),
 };
 export const image = {
   splash: require('../assets/images/splash.png'),
