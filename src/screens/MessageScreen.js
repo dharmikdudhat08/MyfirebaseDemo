@@ -35,7 +35,6 @@ const MessageScreen = ({navigation}) => {
       .doc(uid)
       .get()
       .then(res => {
-        // console.log(res._data.following)
         let tempData = [];
         for (let x in res._data.following) {
           firestore()
@@ -43,7 +42,6 @@ const MessageScreen = ({navigation}) => {
             .doc(res._data.following[x])
             .get()
             .then(user => {
-              console.log(user._data.profilePic);
               tempData.push({
                 userName: user._data.userName,
                 profilePic: user._data.profilePic,
@@ -52,54 +50,22 @@ const MessageScreen = ({navigation}) => {
             });
         }
         setUserData(tempData);
-        console.log(userData);
       });
   }, []);
   const onChat = (userName, profilePic, uid) => {
-    // navigation.navigate('Chat');
-    // console.log(item.uid+'+'+userId);
-    let newUid;
-    firestore()
-      .collection('Chat')
-      .onSnapshot(user => {
-        const items = [];
-        user.forEach(documentSnapshot => {
-          console.log(documentSnapshot.id);
-          const data = documentSnapshot.id.split('+');
-
-          console.log(data[0]);
-
-          if (data[0] == uid && data[1] == userId) {
-            newUid = documentSnapshot.id;
-          } else {
-            newUid = userId + '+' + uid;
-            // console.log(newUid,"false")
-          }
-          console.log(newUid);
-
-          dispatch({
-            type: 'CHAT_USER_NAME',
-            payload: userName,
-          });
-          dispatch({
-            type: 'PROFILEPIC',
-            payload: profilePic,
-          });
-
-          dispatch({
-            type: 'NEW_UID',
-            payload: newUid,
-          });
-          dispatch({
-            type: 'CHAT_USER_UID',
-            payload: uid,
-          });
-        });
-      });
-      firestore().collection('Chat').doc(newUid).set({
-        chat: [],
-      });
-      navigation.navigate('Chat');
+    dispatch({
+      type: 'CHAT_USER_NAME',
+      payload: userName,
+    });
+    dispatch({
+      type: 'PROFILEPIC',
+      payload: profilePic,
+    });
+    dispatch({
+      type: 'CHAT_USER_UID',
+      payload: uid,
+    });
+    navigation.navigate('Chat');
   };
 
   return (

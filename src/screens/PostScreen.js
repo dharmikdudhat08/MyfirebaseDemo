@@ -105,7 +105,7 @@ const PostScreen = ({navigation}) => {
   const onPostPress = async () => {
     setCount(count + 1);
     console.log('uid-----====----=-=-=-=-=-=>', uidValue);
-    const profilePic = await AsyncStorage.getItem('PROFILE_PIC')
+    const profilePic = await AsyncStorage.getItem('PROFILE_PIC');
     try {
       if (imageData) {
         const now = new Date();
@@ -131,13 +131,13 @@ const PostScreen = ({navigation}) => {
               .then(response => {
                 firestore().collection('Post').doc(uuid).set({
                   userName: userName,
-                  ProfilePic : profilePic,
+                  ProfilePic: profilePic,
                   caption: caption,
                   url: res,
                   location: location,
                   uid: uidValue,
                   isLikedUser: [],
-                  comment: [],
+                  commentData: [],
                   mediaType: 'image',
                 });
                 console.log(response, 'fhwiefhiweur121243446723447634');
@@ -167,10 +167,10 @@ const PostScreen = ({navigation}) => {
               .then(response => {
                 firestore().collection('Post').doc(uuid).set({
                   userName: userName,
-                  ProfilePic : profilePic,
+                  ProfilePic: profilePic,
                   caption: caption,
                   isLikedUser: [],
-                  comment: [],
+                  commentData: [],
                   url: res,
                   location: location,
                   uid: uidValue,

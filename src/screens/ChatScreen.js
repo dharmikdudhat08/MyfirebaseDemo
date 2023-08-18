@@ -1,4 +1,5 @@
 import {
+  FlatList,
   Image,
   SafeAreaView,
   StyleSheet,
@@ -12,60 +13,116 @@ import {HeaderBarDiff} from '../components';
 import {icon} from '../helpers/ImageHelper';
 import {fs, hp, wp} from '../helpers/GlobalFunction';
 import {useSelector} from 'react-redux';
-import {GiftedChat} from 'react-native-gifted-chat';
+import {Bubble, GiftedChat, InputToolbar} from 'react-native-gifted-chat';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import {useNavigation} from '@react-navigation/native';
 
 const ChatScreen = () => {
   const userName = useSelector(state => state.chatUserName);
-  console.log(userName);
+  // console.log(userName);
   const ProfilePic = useSelector(state => state.profilePic);
-  console.log(ProfilePic);
-  const newUid = useSelector(state => state.newUid);
-  console.log(newUid, '()((_()()(()()(');
+  // console.log(ProfilePic);
   const chatUserUid = useSelector(state => state.chatUserUid);
   const navigation = useNavigation();
   const [messages, setMessages] = useState([]);
   const [userIdName, setUserIdName] = useState();
   const [currentUserProfilePic, setCurrentUserProfilePic] = useState();
+  const [newUid, setNewUid] = useState('');
+  const [senderUid, setSenderUid] = useState('');
 
   useEffect(() => {
-    const uid = auth().currentUser.uid;
+    const userId = auth().currentUser.uid;
+    setSenderUid(senderUid);
+    const docId =
+      auth().currentUser.uid > chatUserUid
+        ? chatUserUid + ' - ' + auth().currentUser.uid
+        : auth().currentUser.uid + ' - ' + chatUserUid;
+    setNewUid(docId);
+    // firestore()
+    //   .collection('Chat')
+    //   .onSnapshot(user => {
+    //     const items = [];
+    //     console.log(user?._docs,"!@#$")
+    //     if(user == []){
+    //       console.log("true")
+    //     }
+    //     else{
+    //       console.log("false")
+    //     }
+    //     if (user._metadata._metadata[0] == false) {
+    //       setNewUid(chatUserUid + '+' + userId);
+    //       console.log("always")
+    //     } else {
+    //       user.forEach(documentSnapshot => {
+    //         const data = documentSnapshot.id.split('+');
+    //         console.log(data, '8)()()()()(9');
+    //         if (data[0] == chatUserUid && data[1] == userId) {
+    //           setNewUid(documentSnapshot.id);
+    //           console.log("1")
+    //         } else if (data[0] == userId && data[1] == chatUserUid) {
+    //           setNewUid(userId + '+' + chatUserUid);
+    //           console.log("2")
+    //         } else {
+    //           setNewUid(chatUserUid + '+' + userId);
+    //           console.log("false")
+    //         }
+    //       });
+    //     }
+
+    //   });
+    // console.log(newUid, 'chat user');
     firestore()
       .collection('User_Details')
-      .doc(uid)
+      .doc(userId)
       .get()
       .then(res => {
         // console.log(res)
         setUserIdName(res._data.userName);
         setCurrentUserProfilePic(res._data.ProfilePic);
       });
-  }, []);
-  const chatSendToFirebase = async () => {
+    chatGetFromFirebase();
+  }, [newUid]);
+
+  const chatGetFromFirebase = () => {
+    const userId = auth().currentUser.uid;
+
+    firestore()
+      .collection('Chat')
+      .doc(newUid)
+      .collection('Messages')
+      .orderBy('createdAt', 'desc')
+      .onSnapshot(querySnapshot => {
+        const data = querySnapshot.docs.map(doc => ({
+          ...doc.data(),
+          createdAt: doc.data().createdAt.toDate(),
+          _id: doc.data()._id,
+        }));
+        setMessages(data);
+        // console.log(data, 'datatfromchat');
+      });
+  };
+  const onSend = async (chat = []) => {
+    global.lastmessage = chat;
+    // setMessages(previousMessages => GiftedChat.append(previousMessages, chat));
+    console.log(chat[0]);
+
     await firestore()
       .collection('Chat')
       .doc(newUid)
-      .set({
-        chat: firestore.FieldValue.arrayUnion({
-          id: 'helllo',
-        }),
+      .collection('Messages')
+      .add({
+        _id: chat[0]._id,
+        text: chat[0].text,
+        createdAt: chat[0].createdAt,
+        user: chat[0].user._id,
+        name: chat[0].user.name,
+        avatar: ProfilePic,
       })
       .then(() => {
         console.log('done!');
       });
   };
-  //  const chatGetFromFirebase = ()=>{
-  //   firestore().collection('Chat').doc(newUid).onSnapshot((chat)=>{
-  //     console.log(chat)
-  //   })
-  //  }
-  const onSend = useCallback((chat = []) => {
-    global.lastmessage = chat;
-    setMessages(previousMessages => GiftedChat.append(previousMessages, chat));
-    console.log(messages, 'hello');
-    chatSendToFirebase();
-  }, []);
   return (
     <LinearGradient
       colors={['#FAF0FA', '#EFFAF4', '#EDF6FF']}
@@ -83,11 +140,10 @@ const ChatScreen = () => {
               position: 'absolute',
               marginTop: 9,
               left: 20,
-              backgroundColor: 'red',
             }}>
             <Image
               source={icon.back}
-              style={{height: 20, width: 20}}
+              style={{height: 25, width: 25}}
               resizeMode="contain"
             />
           </TouchableOpacity>
@@ -107,15 +163,50 @@ const ChatScreen = () => {
             <Text style={styles.nameTextStyle}>{userName}</Text>
           </View>
         </View>
-        <View style={{height: hp(87), width: '100%', alignSelf: 'center'}}>
-          <GiftedChat
+        <View style={{height: hp(48),width:'100%', alignSelf: 'center'}}>
+          {/* <GiftedChat
             messages={messages}
             showAvatarForEveryMessage={true}
+            isTyping={true}
             onSend={messages => onSend(messages)}
             user={{
-              _id: auth().currentUser.uid,
+              _id: '101helolo',
               name: userIdName,
               avatar: currentUserProfilePic,
+              createdAt : firestore.FieldValue.serverTimestamp(),
+
+            }}
+            renderBubble={(props)=>{
+              return <Bubble
+              {...props}
+              wrapperStyle={{
+                right: {
+                  backgroundColor:"green",
+
+                }
+                
+              }}
+            />
+          }}
+
+          renderInputToolbar={(props)=>{
+              return <InputToolbar {...props}
+               containerStyle={{borderTopWidth: 1.5, borderTopColor: 'green'}} 
+               textInputStyle={{ color: "black" }}
+               />
+          }}
+          /> */}
+          <FlatList
+            data={messages}
+            renderItem={item => {
+              return (
+                <View style={{justifyContent:'flex-end'}}>
+                  <View style={{backgroundColor:'red',borderRadius:4,marginVertical:3,width:'50%',alignItems:'flex-end'}}>
+                    <Text>helloxvdvdv</Text>
+                    <Text>hekk</Text>
+                  </View>
+                </View>
+              );
             }}
           />
         </View>
