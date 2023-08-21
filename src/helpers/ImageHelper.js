@@ -24,9 +24,11 @@ export const icon = {
   back: require('../assets/icons/back.png'),
   mention: require('../assets/icons/mention.png'),
   logout: require('../assets/icons/logout.png'),
-  send : require('../assets/icons/send.png'),
-  search : require('../assets/icons/magnifying-glass.png'),
-  chat : require('../assets/icons/message_4302296.png'),
+  send: require('../assets/icons/send.png'),
+  search: require('../assets/icons/magnifying-glass.png'),
+  chat: require('../assets/icons/message_4302296.png'),
+  keyboard: require('../assets/icons/keyboard_2263611.png'),
+  gallary : require('../assets/icons/gallery.png'),
 };
 export const image = {
   splash: require('../assets/images/splash.png'),

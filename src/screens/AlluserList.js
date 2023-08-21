@@ -22,7 +22,7 @@ import auth from '@react-native-firebase/auth';
 const AlluserList = () => {
   const [userName, setUserName] = useState('');
   const [originalName, setOriginalName] = useState('');
-  const [allUserData, setAllUserData] = useState();
+  const [allUserData, setAllUserData] = useState([]);
   const [count, setCount] = useState(null);
   const [followuid, setFollowuid] = useState('');
   const [following, setFollowing] = useState(false);
@@ -32,11 +32,14 @@ const AlluserList = () => {
 
   useEffect(() => {
     name();
-  }, [allUserData,updatedData]);
+  },[]);
+
+console.log('all', allUserData)
 
   const name = async () => {
     const user = await firestore().collection('User_Details').get();
     setAllUserData(user?.docs);
+    // console.log("+++",user?.docs)
   };
 
   const onFollow = uId => {
@@ -120,7 +123,10 @@ const AlluserList = () => {
       });
     }
     const filteredData = tempData.filter(item =>
-      item.userName.includes(formattedQuery),
+    item.userName.length<=0?
+      console.log('first is null')
+      :item.userName.includes(formattedQuery),
+    
     );
     console.log(filteredData);
     setUpdatedData(filteredData);
@@ -151,6 +157,8 @@ const AlluserList = () => {
         </View>
         <FlatList
           data={updatedData  ? updatedData : allUserData}
+          // data={allUserData?allUserData:updatedData}
+
           renderItem={({item, index}) => {
             if (
               updatedData
