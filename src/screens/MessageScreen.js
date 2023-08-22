@@ -30,28 +30,36 @@ const MessageScreen = ({navigation}) => {
   useEffect(() => {
     const uid = auth().currentUser.uid;
     setUserId(uid);
+    followerData();
+  }, []);
+  const followerData = () => {
     firestore()
       .collection('User_Details')
-      .doc(uid)
-      .get()
-      .then(res => {
-        let tempData = [];
-        for (let x in res._data.following) {
-          firestore()
-            .collection('User_Details')
-            .doc(res._data.following[x])
-            .get()
-            .then(user => {
+      .onSnapshot(response => {
+        console.log(response._docs._data, 'heyheyhye');
+        const items = [];
+        response.forEach(documentSnapshot => {
+          items.push({
+            id: documentSnapshot.id,
+            ...documentSnapshot.data(),
+          });
+        });
+        const tempData = [];
+        for (let x in items) {
+          for (let y in items[x].followers) {
+            if (items[x].followers[y] == auth().currentUser.uid) {
               tempData.push({
-                userName: user._data.userName,
-                profilePic: user._data.profilePic,
-                uid: user._data.uid,
+                profilePic: items[x].profilePic,
+                userName: items[x].userName,
+                uid: items[x].uid,
               });
-            });
+            }
+          }
         }
+        console.log(tempData);
         setUserData(tempData);
       });
-  }, []);
+  };
   const onChat = (userName, profilePic, uid) => {
     dispatch({
       type: 'CHAT_USER_NAME',
@@ -77,8 +85,7 @@ const MessageScreen = ({navigation}) => {
         <View style={{marginTop: hp(3.4)}}>
           <FlatList
             data={userData}
-            renderItem={({item}) => {
-              // console.log(item.profilePic)
+            renderItem={({item, index}) => {
               return (
                 <View style={styles.flatListViewStyle}>
                   <TouchableOpacity

@@ -110,7 +110,7 @@ console.log('all', allUserData)
   };
   const handleSearch = text => {
     const formattedQuery = text.toLowerCase();
-    // console.log(allUserData, '$$$$$$$%$%$%$%$%$%$%');
+  
     let tempData = [];
     for (let x in allUserData) {
       tempData.push({

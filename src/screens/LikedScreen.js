@@ -262,10 +262,6 @@ const LikedScreen = () => {
               profilepic: data._data.commentData[x].profilePic,
             });
           }
-          // items.push({
-          //   ...documentSnapshot.data(),
-          // });
-          console.log(commentItem, '$$$$$$$');
           setFirebaseCommentData(commentItem);
         });
     } catch (error) {

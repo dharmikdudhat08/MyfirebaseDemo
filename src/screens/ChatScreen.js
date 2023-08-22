@@ -1,4 +1,5 @@
 import {
+  Alert,
   FlatList,
   Image,
   KeyboardAvoidingView,
@@ -25,6 +26,8 @@ import moment from 'moment';
 import Modal from 'react-native-modal';
 import ImagePicker from 'react-native-image-crop-picker';
 import storage from '@react-native-firebase/storage';
+import {generateUUID} from '../helpers/RandomIdGenerator';
+import Video from 'react-native-video';
 
 const ChatScreen = () => {
   const userName = useSelector(state => state.chatUserName);
@@ -42,15 +45,19 @@ const ChatScreen = () => {
   const [nweMessage, setNewMessage] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
   const [imageData, setImageData] = useState('');
+  const [filename, setFilename] = useState();
+  const [path, setPath] = useState();
   const [imageDataFileName, setImageDataFileName] = useState('');
   const [videoData, setVideoData] = useState('');
   const [location, setLocation] = useState('');
   const [caption, setCaption] = useState('');
+  const [imageurl, setImageurl] = useState(null);
+  const [videourl, setVideourl] = useState(null);
 
   const newDate = new Date();
   const updatedDate = moment(newDate).format('DD-MM-YYYY');
   const currentDate = updatedDate.toString().split('-');
-  console.log(currentDate);
+
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
@@ -67,7 +74,6 @@ const ChatScreen = () => {
       .doc(userId)
       .get()
       .then(res => {
-        // console.log(res)
         setUserIdName(res._data.userName);
         setCurrentUserProfilePic(res._data.ProfilePic);
       });
@@ -75,48 +81,55 @@ const ChatScreen = () => {
   }, []);
 
   const chatGetFromFirebase = () => {
-    console.log('call');
     try {
-      console.log('call2');
       firestore()
         .collection('Chat')
         .doc(newUid)
         .collection('Messages')
         .orderBy('createdAt', 'asc')
         .onSnapshot(querySnapshot => {
-          console.log('call3');
-          console.log(querySnapshot);
           const data = querySnapshot._docs.map(doc => ({
             ...doc.data(),
             createdAt: doc.data().createdAt.toDate(),
           }));
           setMessages(data);
-          console.log(data, 'avvo aavo');
         });
     } catch (error) {
       console.log(error);
     }
   };
   const onSend = async () => {
-    // setMessages(previousMessages => GiftedChat.append(previousMessages, chat));
-    await firestore()
-      .collection('Chat')
-      .doc(newUid)
-      .collection('Messages')
-      .add({
-        text: nweMessage,
-        createdAt: firestore.Timestamp.fromDate(new Date()),
-        user: auth().currentUser.uid,
-        senderUserName: userIdName,
-        receiverUserName: userName,
-        avatar: ProfilePic,
-        image: imageData,
-        video: videoData,
-      })
-      .then(() => {
-        console.log('done!');
-        setNewMessage(null);
-      });
+    onPostPress();
+    if (imageurl || videourl || nweMessage) {
+      try {
+        await firestore()
+          .collection('Chat')
+          .doc(newUid)
+          .collection('Messages')
+          .add({
+            text: nweMessage ? nweMessage : null,
+            createdAt: firestore.Timestamp.fromDate(new Date()),
+            user: auth().currentUser.uid,
+            senderUserName: userIdName,
+            receiverUserName: userName,
+            avatar: ProfilePic,
+            image: imageurl ? imageurl : null,
+            video: videourl ? videourl : null,
+          })
+          .then(() => {
+            console.log('done!');
+            setImageurl(null);
+            setVideourl(null);
+            setImageData(null);
+            setVideoData(null);
+            setNewMessage(null);
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      Alert.alert('Please type a message or send media!!!');
+    }
   };
   const openImageGallary = () => {
     try {
@@ -128,7 +141,6 @@ const ChatScreen = () => {
       }).then(async image => {
         setFilename(JSON.stringify(image.filename));
         setPath(image.path);
-
         setImageData(image.path);
       });
     } catch (error) {
@@ -141,10 +153,10 @@ const ChatScreen = () => {
         mediaType: 'video',
         cropping: false,
       }).then(async video => {
-        console.log(video, '-=-=-=-=-=--=-');
         setFilename(JSON.stringify(video.filename));
         setPath(video.path);
         setVideoData(video.path);
+        console.log(video.path)
       });
     } catch (error) {
       console.log(error);
@@ -155,77 +167,38 @@ const ChatScreen = () => {
     setVideoData(null);
   };
   const onPostPress = async () => {
-    setCount(count + 1);
-    console.log('uid-----====----=-=-=-=-=-=>', uidValue);
-    const profilePic = await AsyncStorage.getItem('PROFILE_PIC');
     try {
       if (imageData) {
-        const now = new Date();
-        console.log(now);
         await storage().ref(filename).putFile(path);
         await storage()
           .ref(filename)
           .getDownloadURL()
           .then(res => {
-            const uuid = generateUUID(20);
-            console.log('====================================');
-            console.log(imageurl, '****(*(*(*(*(*(*(*(*(*(');
-            console.log('====================================');
-
-            firestore()
-              .collection('User_Details')
-              .doc(uidValue)
-              .update({
-                urldata: firestore.FieldValue.arrayUnion({
-                  postId: uuid,
-                }),
-              })
-              .then(response => {
-                firestore().collection('Post').doc(uuid).set({
-                  url: res,
-
-                  mediaType: 'image',
-                });
-                console.log(response, 'fhwiefhiweur121243446723447634');
-                setImageData(null);
-              });
-          });
-        setImageData(null);
-        console.log('====================================');
-        console.log(imageData);
-        console.log('====================================');
+            setImageurl(res);
+          }).then(()=>{
+            setImageData(null)
+            setVideoData(null)
+          });;
       } else if (videoData) {
+        console.log("avvo")
         await storage().ref(filename).putFile(path);
         await storage()
           .ref(filename)
           .getDownloadURL()
           .then(res => {
-            const uuid = generateUUID(20);
-
-            firestore()
-              .collection('User_Details')
-              .doc(uidValue)
-              .update({
-                urldata: firestore.FieldValue.arrayUnion({
-                  postId: uuid,
-                }),
-              })
-              .then(response => {
-                firestore().collection('Post').doc(uuid).set({
-                  url: res,
-                });
-                console.log(response);
-              });
+            setVideourl(res);
+            console.log(res);
+          }).then(()=>{
+            setImageData(null)
+            setVideoData(null)
           });
         console.log('file upload success!');
-        setVideoData(null);
       } else {
+        console.log("gyo")
         null;
       }
     } catch (error) {
-      console.log('====================================');
       console.log(error);
-      console.log('====================================');
     }
   };
   return (
@@ -302,22 +275,52 @@ const ChatScreen = () => {
                             ? 'flex-end'
                             : 'flex-start',
                       }}>
-                      <View
-                        style={{
-                          borderWidth: 1,
-                          marginHorizontal: 5,
-                          padding: 4,
-                          borderRadius: 6,
-                          backgroundColor: '#AEE3F2',
-                        }}>
-                        <Text
-                          style={{fontSize: fs(18, 812), fontWeight: '600'}}>
-                          {item.item.text}
-                        </Text>
-                        <Text style={{color: 'grey', fontSize: fs(12, 812)}}>
-                          {formattedTime}
-                        </Text>
-                      </View>
+                      {item.item.image ? (
+                        <View
+                          style={{
+                            borderWidth: 1,
+                            marginHorizontal: 5,
+                            padding: 4,
+                            borderRadius: 6,
+                          }}>
+                          <Image
+                            source={{uri: item.item.image}}
+                            style={{height: 200, width: 200}}
+                            resizeMode="stretch"
+                          />
+                        </View>
+                      ) : item.item.video ? (
+                        <View
+                          style={{
+                            borderWidth: 1,
+                            marginHorizontal: 5,
+                            padding: 4,
+                            borderRadius: 6,
+                          }}>
+                          <Video
+                            source={{uri: item.item.video}}
+                            style={{height: 200, width: 200}}
+                            controls={true}
+                            resizeMode="stretch"
+                          />
+                        </View>
+                      ) : (
+                        <View
+                          style={{
+                            borderWidth: 1,
+                            marginHorizontal: 5,
+                            padding: 4,
+                            borderRadius: 6,
+                          }}>
+                          <Text
+                            style={{fontSize: fs(18, 812), fontWeight: '600'}}>
+                            {item.item.text}
+                          </Text>
+                          <Text style={{color: 'grey', fontSize: fs(12, 812)}}>
+                            {formattedTime}
+                          </Text>
+                        </View>
+                      )}
                       <Image
                         source={
                           item.item.avatar
@@ -349,21 +352,52 @@ const ChatScreen = () => {
                         style={{height: 30, width: 30, borderRadius: 100}}
                         resizeMode="stretch"
                       />
-                      <View
-                        style={{
-                          borderWidth: 1,
-                          marginHorizontal: 5,
-                          padding: 4,
-                          borderRadius: 6,
-                        }}>
-                        <Text
-                          style={{fontSize: fs(18, 812), fontWeight: '600'}}>
-                          {item.item.text}
-                        </Text>
-                        <Text style={{color: 'grey', fontSize: fs(12, 812)}}>
-                          {formattedTime}
-                        </Text>
-                      </View>
+                      {item.item.image ? (
+                        <View
+                          style={{
+                            borderWidth: 1,
+                            marginHorizontal: 5,
+                            padding: 4,
+                            borderRadius: 6,
+                          }}>
+                          <Image
+                            source={{uri: item.item.image}}
+                            style={{height: 200, width: 200}}
+                            resizeMode="stretch"
+                          />
+                        </View>
+                      ) : item.item.video ? (
+                        <View
+                          style={{
+                            borderWidth: 1,
+                            marginHorizontal: 5,
+                            padding: 4,
+                            borderRadius: 6,
+                          }}>
+                          <Video
+                            source={{uri: item.item.video}}
+                            style={{height: 200, width: 200}}
+                            controls={true}
+                            resizeMode="stretch"
+                          />
+                        </View>
+                      ) : (
+                        <View
+                          style={{
+                            borderWidth: 1,
+                            marginHorizontal: 5,
+                            padding: 4,
+                            borderRadius: 6,
+                          }}>
+                          <Text
+                            style={{fontSize: fs(18, 812), fontWeight: '600'}}>
+                            {item.item.text}
+                          </Text>
+                          <Text style={{color: 'grey', fontSize: fs(12, 812)}}>
+                            {formattedTime}
+                          </Text>
+                        </View>
+                      )}
                     </View>
                   )}
                 </View>
@@ -430,22 +464,125 @@ const ChatScreen = () => {
               style={{
                 backgroundColor: 'white',
                 padding: 10,
-                height: 200,
+                height: imageData || videoData ? 500 : 200,
                 borderRadius: 12,
               }}>
-              <View style={{flexDirection: 'row', alignSelf: 'center'}}>
-                <TouchableOpacity style={styles.Buttonstyle}>
-                  <Text style={styles.ButtonfontStyle}>Photo</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.Buttonstyle}>
-                  <Text style={styles.ButtonfontStyle}>Video</Text>
-                </TouchableOpacity>
-              </View>
-              <TouchableOpacity
-                style={styles.cancelButtonStyle}
-                onPress={toggleModal}>
-                <Text style={styles.cancelButtonFontStyle}>Cancel</Text>
-              </TouchableOpacity>
+              {imageData || videoData ? (
+                <View>
+                  {imageData ? (
+                    <View
+                      style={{
+                        alignSelf: 'center',
+                        padding: 4,
+                      }}>
+                      <Image
+                        source={{uri: imageData}}
+                        style={{
+                          height: 330,
+                          width: 375,
+                          borderRadius: 10,
+                          borderWidth: 1,
+                          alignSelf: 'center',
+                        }}
+                        resizeMode="stretch"
+                      />
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'flex-end',
+                          marginVertical: hp(7),
+                          alignSelf: 'center',
+                        }}>
+                        <TouchableOpacity
+                          style={styles.postCancelButtonStyle}
+                          onPress={() => {
+                            toggleModal();
+                            onCancel();
+                          }}>
+                          <Text style={styles.cancelButtonFontStyle}>
+                            Cancel
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.Buttonstyle}
+                          onPress={() => {
+                            onSend();
+                            toggleModal();
+                          }}>
+                          <Text style={styles.ButtonfontStyle}>Send</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ) : (
+                    <View
+                      style={{
+                        alignSelf: 'center',
+                        padding: 4,
+                      }}>
+                      <Video
+                        source={{uri: videoData}}
+                        style={{
+                          height: 330,
+                          width: 375,
+                          borderRadius: 10,
+                          borderWidth: 1,
+                          alignSelf: 'center',
+                        }}
+                        resizeMode="stretch"
+                      />
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'flex-end',
+                          marginVertical: hp(7),
+                          alignSelf: 'center',
+                        }}>
+                        <TouchableOpacity
+                          style={styles.postCancelButtonStyle}
+                          onPress={() => {
+                            toggleModal();
+                            onCancel();
+                          }}>
+                          <Text style={styles.cancelButtonFontStyle}>
+                            Cancel
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.Buttonstyle}
+                          onPress={() => {
+                            onSend();
+                            toggleModal();
+                          }}>
+                          <Text style={styles.ButtonfontStyle}>Send</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
+                </View>
+              ) : (
+                <View>
+                  <View style={{flexDirection: 'row', alignSelf: 'center'}}>
+                    <TouchableOpacity
+                      style={styles.Buttonstyle}
+                      onPress={openImageGallary}>
+                      <Text style={styles.ButtonfontStyle}>Photo</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.Buttonstyle}
+                      onPress={openVideoGallary}>
+                      <Text style={styles.ButtonfontStyle}>Video</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.cancelButtonStyle}
+                    onPress={() => {
+                      toggleModal();
+                      onCancel();
+                    }}>
+                    <Text style={styles.cancelButtonFontStyle}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           </Modal>
         </View>
@@ -505,6 +642,16 @@ const styles = StyleSheet.create({
     height: 40,
     width: '40%',
     backgroundColor: '#A975FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 18,
+    marginHorizontal: 15,
+  },
+  postCancelButtonStyle: {
+    height: 40,
+    width: '40%',
+    borderColor: '#A975FF',
+    borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 18,

@@ -4,16 +4,16 @@ import { icon } from '../../helpers/ImageHelper'
 import { fs } from '../../helpers/GlobalFunction'
 import { DrawerActions, useNavigation } from '@react-navigation/native'
 
-const HeaderBar = ({name,headerFontStyle}) => {
+const HeaderBar = ({name,headerFontStyle, onPress}) => {
   const navigation = useNavigation();
   const drawerOpen =()=>{
-    console.log("hiii");
-    navigation?.dispatch(DrawerActions?.openDrawer());
+    // console.log("hiii");
+    // navigation?.dispatch(DrawerActions?.openDrawer());
     // navigation?.openDrawer();
   }
   return (
     <View style={styles.headerStyle}>
-      <TouchableOpacity style={styles.drawerIconStyle} onPress={drawerOpen}>
+      <TouchableOpacity style={styles.drawerIconStyle} onPress={onPress}>
         <Image source={icon.drawer} resizeMode='contain' style={styles.imageStyle} />
       </TouchableOpacity>
       <Text style={headerFontStyle}>{name}</Text>
