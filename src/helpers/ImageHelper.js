@@ -29,6 +29,7 @@ export const icon = {
   chat: require('../assets/icons/message_4302296.png'),
   keyboard: require('../assets/icons/keyboard_2263611.png'),
   gallary : require('../assets/icons/gallery.png'),
+  back_arrow : require('../assets/icons/arrow.png'),
 };
 export const image = {
   splash: require('../assets/images/splash.png'),

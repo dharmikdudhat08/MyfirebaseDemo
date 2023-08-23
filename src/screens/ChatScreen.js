@@ -20,7 +20,7 @@ import {useSelector} from 'react-redux';
 import {Bubble, GiftedChat, InputToolbar} from 'react-native-gifted-chat';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
-import {useNavigation} from '@react-navigation/native';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import moment from 'moment';
 import Modal from 'react-native-modal';
@@ -30,10 +30,11 @@ import {generateUUID} from '../helpers/RandomIdGenerator';
 import Video from 'react-native-video';
 
 const ChatScreen = () => {
+  const isFocused = useIsFocused();
   const userName = useSelector(state => state.chatUserName);
-  // console.log(userName);
+
   const ProfilePic = useSelector(state => state.profilePic);
-  // console.log(ProfilePic);
+
   const chatUserUid = useSelector(state => state.chatUserUid);
   const navigation = useNavigation();
 
@@ -41,7 +42,7 @@ const ChatScreen = () => {
   const [userIdName, setUserIdName] = useState();
   const [currentUserProfilePic, setCurrentUserProfilePic] = useState();
   const [newUid, setNewUid] = useState('');
-  const [senderUid, setSenderUid] = useState('');
+
   const [nweMessage, setNewMessage] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
   const [imageData, setImageData] = useState('');
@@ -62,59 +63,107 @@ const ChatScreen = () => {
     setModalVisible(!isModalVisible);
   };
   useEffect(() => {
+    getUserDetails();
+  }, []);
+  const getUserDetails = async () => {
     const userId = auth().currentUser.uid;
-    setSenderUid(senderUid);
     const docId =
       auth().currentUser.uid > chatUserUid
         ? chatUserUid + ' - ' + auth().currentUser.uid
         : auth().currentUser.uid + ' - ' + chatUserUid;
     setNewUid(docId);
-    firestore()
+    await firestore()
       .collection('User_Details')
       .doc(userId)
       .get()
       .then(res => {
         setUserIdName(res._data.userName);
-        setCurrentUserProfilePic(res._data.ProfilePic);
+        setCurrentUserProfilePic(res._data.profilePic);
+      })
+      .then(async () => {
+        await firestore()
+          .collection('Chat')
+          .doc(docId)
+          .collection('Messages')
+          .orderBy('createdAt', 'asc')
+          .onSnapshot(querySnapshot => {
+            const data = querySnapshot._docs.map(doc => ({
+              ...doc.data(),
+              createdAt: doc.data().createdAt.toDate(),
+            }));
+            setMessages(data);
+          });
       });
-    chatGetFromFirebase();
-  }, []);
-
-  const chatGetFromFirebase = () => {
-    try {
-      firestore()
-        .collection('Chat')
-        .doc(newUid)
-        .collection('Messages')
-        .orderBy('createdAt', 'asc')
-        .onSnapshot(querySnapshot => {
-          const data = querySnapshot._docs.map(doc => ({
-            ...doc.data(),
-            createdAt: doc.data().createdAt.toDate(),
-          }));
-          setMessages(data);
-        });
-    } catch (error) {
-      console.log(error);
-    }
   };
   const onSend = async () => {
-    onPostPress();
-    if (imageurl || videourl || nweMessage) {
-      try {
+    try {
+      if (imageData) {
+        await storage().ref(filename).putFile(path);
+        await storage()
+          .ref(filename)
+          .getDownloadURL()
+          .then(async res => {
+            await firestore()
+              .collection('Chat')
+              .doc(newUid)
+              .collection('Messages')
+              .add({
+                createdAt: firestore.Timestamp.fromDate(new Date()),
+                user: auth().currentUser.uid,
+                senderUserName: userIdName,
+                receiverUserName: userName,
+                avatar: ProfilePic,
+                image: res,
+              })
+              .then(() => {
+                console.log('done!');
+                setImageurl(null);
+                setVideourl(null);
+                setImageData(null);
+                setVideoData(null);
+                setNewMessage(null);
+              });
+          });
+      } else if (videoData) {
+        console.log('avvo');
+        await storage().ref(filename).putFile(path);
+        await storage()
+          .ref(filename)
+          .getDownloadURL()
+          .then(async res => {
+            await firestore()
+              .collection('Chat')
+              .doc(newUid)
+              .collection('Messages')
+              .add({
+                createdAt: firestore.Timestamp.fromDate(new Date()),
+                user: auth().currentUser.uid,
+                senderUserName: userIdName,
+                receiverUserName: userName,
+                avatar: ProfilePic,
+                video: res,
+              })
+              .then(() => {
+                console.log('done!');
+                setImageurl(null);
+                setVideourl(null);
+                setImageData(null);
+                setVideoData(null);
+                setNewMessage(null);
+              });
+          });
+      } else if (nweMessage) {
         await firestore()
           .collection('Chat')
           .doc(newUid)
           .collection('Messages')
           .add({
-            text: nweMessage ? nweMessage : null,
+            text: nweMessage,
             createdAt: firestore.Timestamp.fromDate(new Date()),
             user: auth().currentUser.uid,
             senderUserName: userIdName,
             receiverUserName: userName,
             avatar: ProfilePic,
-            image: imageurl ? imageurl : null,
-            video: videourl ? videourl : null,
           })
           .then(() => {
             console.log('done!');
@@ -124,11 +173,11 @@ const ChatScreen = () => {
             setVideoData(null);
             setNewMessage(null);
           });
-      } catch (error) {
-        console.log(error);
+      } else {
+        Alert.alert('Please type a message or send media!!!');
       }
-    } else {
-      Alert.alert('Please type a message or send media!!!');
+    } catch (error) {
+      console.log(error);
     }
   };
   const openImageGallary = () => {
@@ -156,7 +205,7 @@ const ChatScreen = () => {
         setFilename(JSON.stringify(video.filename));
         setPath(video.path);
         setVideoData(video.path);
-        console.log(video.path)
+        console.log(video.path);
       });
     } catch (error) {
       console.log(error);
@@ -165,74 +214,26 @@ const ChatScreen = () => {
   const onCancel = () => {
     setImageData(null);
     setVideoData(null);
+    setImageurl(null);
+    setVideourl(null);
   };
-  const onPostPress = async () => {
-    try {
-      if (imageData) {
-        await storage().ref(filename).putFile(path);
-        await storage()
-          .ref(filename)
-          .getDownloadURL()
-          .then(res => {
-            setImageurl(res);
-          }).then(()=>{
-            setImageData(null)
-            setVideoData(null)
-          });;
-      } else if (videoData) {
-        console.log("avvo")
-        await storage().ref(filename).putFile(path);
-        await storage()
-          .ref(filename)
-          .getDownloadURL()
-          .then(res => {
-            setVideourl(res);
-            console.log(res);
-          }).then(()=>{
-            setImageData(null)
-            setVideoData(null)
-          });
-        console.log('file upload success!');
-      } else {
-        console.log("gyo")
-        null;
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const onPostPress = async () => {};
   return (
     <LinearGradient
       colors={['#FAF0FA', '#EFFAF4', '#EDF6FF']}
       style={styles.linearGradient}>
       <SafeAreaView>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginVertical: 10,
-          }}>
+        <View style={styles.headerViewStyle}>
           <TouchableOpacity
             onPress={() => navigation.goBack('')}
-            style={{
-              position: 'absolute',
-              marginTop: 9,
-              left: 20,
-            }}>
+            style={styles.backButtonTouchStyle}>
             <Image
-              source={icon.back}
+              source={icon.back_arrow}
               style={{height: 25, width: 25}}
               resizeMode="contain"
             />
           </TouchableOpacity>
-          <View
-            style={{
-              flexDirection: 'row',
-              width: '100%',
-              alignItems: 'center',
-              // justifyContent: 'center',
-              marginTop: 5,
-            }}>
+          <View style={styles.headerProfileStyle}>
             <Image
               source={ProfilePic ? {uri: ProfilePic} : icon.account}
               style={styles.ProfileStyle}
@@ -242,7 +243,7 @@ const ChatScreen = () => {
           </View>
         </View>
 
-        <View style={{width: '100%', alignSelf: 'center', height: hp(80.8)}}>
+        <View style={styles.flatlistViewStyle}>
           <FlatList
             data={messages}
             renderItem={item => {
@@ -259,141 +260,97 @@ const ChatScreen = () => {
                   {updatedformateDate[0] == currentDate[0] &&
                   updatedformateDate[1] == currentDate[1] &&
                   updatedformateDate[2] == currentDate[2] ? (
-                    <Text style={{alignSelf: 'center'}}>Today</Text>
+                    <Text style={styles.timeTextStyle}>Today</Text>
                   ) : (
-                    <Text style={{alignSelf: 'center'}}>{formattedDate}</Text>
+                    <Text style={styles.timeTextStyle}>{formattedDate}</Text>
                   )}
                   {auth().currentUser.uid == item.item.user ? (
                     <View
-                      style={{
-                        borderRadius: 4,
-                        marginVertical: 3,
-                        padding: 4,
-                        flexDirection: 'row',
-                        alignSelf:
-                          auth().currentUser.uid == item.item.user
-                            ? 'flex-end'
-                            : 'flex-start',
-                      }}>
+                      style={[
+                        styles.messageContainerViewStyle,
+                        {
+                          alignSelf:
+                            auth().currentUser.uid == item.item.user
+                              ? 'flex-end'
+                              : 'flex-start',
+                        },
+                      ]}>
                       {item.item.image ? (
-                        <View
-                          style={{
-                            borderWidth: 1,
-                            marginHorizontal: 5,
-                            padding: 4,
-                            borderRadius: 6,
-                          }}>
+                        <View style={styles.messageViewStyle}>
                           <Image
                             source={{uri: item.item.image}}
-                            style={{height: 200, width: 200}}
+                            style={styles.messageMediaStyle}
                             resizeMode="stretch"
                           />
                         </View>
                       ) : item.item.video ? (
-                        <View
-                          style={{
-                            borderWidth: 1,
-                            marginHorizontal: 5,
-                            padding: 4,
-                            borderRadius: 6,
-                          }}>
+                        <View style={styles.messageViewStyle}>
                           <Video
                             source={{uri: item.item.video}}
-                            style={{height: 200, width: 200}}
+                            style={styles.messageMediaStyle}
                             controls={true}
                             resizeMode="stretch"
                           />
                         </View>
                       ) : (
-                        <View
-                          style={{
-                            borderWidth: 1,
-                            marginHorizontal: 5,
-                            padding: 4,
-                            borderRadius: 6,
-                          }}>
-                          <Text
-                            style={{fontSize: fs(18, 812), fontWeight: '600'}}>
+                        <View style={styles.messageViewStyle}>
+                          <Text style={styles.textMessageStyle}>
                             {item.item.text}
                           </Text>
-                          <Text style={{color: 'grey', fontSize: fs(12, 812)}}>
+                          <Text style={styles.textMessageTimeStyle}>
                             {formattedTime}
                           </Text>
                         </View>
                       )}
                       <Image
                         source={
-                          item.item.avatar
-                            ? {uri: item.item.avatar}
+                          currentUserProfilePic
+                            ? {uri: currentUserProfilePic}
                             : icon.account
                         }
-                        style={{height: 30, width: 30, borderRadius: 100}}
+                        style={styles.messageProfilePicStyle}
                         resizeMode="stretch"
                       />
                     </View>
                   ) : (
                     <View
-                      style={{
-                        borderRadius: 4,
-                        marginVertical: 3,
-                        padding: 4,
-                        flexDirection: 'row',
-                        alignSelf:
-                          auth().currentUser.uid == item.item.user
-                            ? 'flex-end'
-                            : 'flex-start',
-                      }}>
+                      style={[
+                        styles.messageContainerViewStyle,
+                        {
+                          alignSelf:
+                            auth().currentUser.uid == item.item.user
+                              ? 'flex-end'
+                              : 'flex-start',
+                        },
+                      ]}>
                       <Image
-                        source={
-                          item.item.avatar
-                            ? {uri: item.item.avatar}
-                            : icon.account
-                        }
-                        style={{height: 30, width: 30, borderRadius: 100}}
+                        source={ProfilePic ? {uri: ProfilePic} : icon.account}
+                        style={styles.messageProfilePicStyle}
                         resizeMode="stretch"
                       />
                       {item.item.image ? (
-                        <View
-                          style={{
-                            borderWidth: 1,
-                            marginHorizontal: 5,
-                            padding: 4,
-                            borderRadius: 6,
-                          }}>
+                        <View style={styles.messageViewStyle}>
                           <Image
                             source={{uri: item.item.image}}
-                            style={{height: 200, width: 200}}
+                            style={styles.messageMediaStyle}
                             resizeMode="stretch"
                           />
                         </View>
                       ) : item.item.video ? (
-                        <View
-                          style={{
-                            borderWidth: 1,
-                            marginHorizontal: 5,
-                            padding: 4,
-                            borderRadius: 6,
-                          }}>
+                        <View style={styles.messageViewStyle}>
                           <Video
                             source={{uri: item.item.video}}
-                            style={{height: 200, width: 200}}
+                            style={styles.messageMediaStyle}
                             controls={true}
                             resizeMode="stretch"
                           />
                         </View>
                       ) : (
-                        <View
-                          style={{
-                            borderWidth: 1,
-                            marginHorizontal: 5,
-                            padding: 4,
-                            borderRadius: 6,
-                          }}>
-                          <Text
-                            style={{fontSize: fs(18, 812), fontWeight: '600'}}>
+                        <View style={styles.messageViewStyle}>
+                          <Text style={styles.textMessageStyle}>
                             {item.item.text}
                           </Text>
-                          <Text style={{color: 'grey', fontSize: fs(12, 812)}}>
+                          <Text style={styles.textMessageTimeStyle}>
                             {formattedTime}
                           </Text>
                         </View>
@@ -411,12 +368,7 @@ const ChatScreen = () => {
               style={styles.inputIconStyle}
               resizeMode="contain"
             />
-            <View
-              style={{
-                width: wp(55),
-                marginLeft: wp(4),
-                justifyContent: 'center',
-              }}>
+            <View style={styles.messageInputStyle}>
               <TextInput
                 placeholder="Type a message..."
                 autoCapitalize="none"
@@ -427,26 +379,24 @@ const ChatScreen = () => {
                 onChangeText={txt => setNewMessage(txt)}
               />
             </View>
-            <TouchableOpacity
-              style={{marginTop: hp(0.8), marginLeft: 10, marginRight: 10}}
-              onPress={toggleModal}>
+            <TouchableOpacity style={styles.gallaryStyle} onPress={toggleModal}>
               <Image
                 source={icon.gallary}
-                style={{height: 30, width: 30, tintColor: 'grey'}}
+                style={styles.gallaryIconStyle}
                 resizeMode="contain"
               />
             </TouchableOpacity>
             <TouchableOpacity
-              style={{marginTop: hp(0.8), marginRight: 10}}
+              style={styles.sendArrowButtonStyle}
               onPress={onSend}>
               <Image
                 source={icon.send}
-                style={{
-                  height: 30,
-                  width: 30,
-                  tintColor: 'grey',
-                  transform: [{rotate: '25deg'}],
-                }}
+                style={[
+                  styles.gallaryIconStyle,
+                  {
+                    transform: [{rotate: '25deg'}],
+                  },
+                ]}
                 resizeMode="contain"
               />
             </TouchableOpacity>
@@ -459,40 +409,22 @@ const ChatScreen = () => {
               toggleModal();
             }}
             swipeDirection={['down']} // Allow swiping down to close the modal
-            style={{justifyContent: 'flex-end', margin: 0}}>
+            style={styles.modalStyle}>
             <View
-              style={{
-                backgroundColor: 'white',
-                padding: 10,
-                height: imageData || videoData ? 500 : 200,
-                borderRadius: 12,
-              }}>
+              style={[
+                styles.modalViewStyle,
+                {height: imageData || videoData ? 500 : 200},
+              ]}>
               {imageData || videoData ? (
                 <View>
                   {imageData ? (
-                    <View
-                      style={{
-                        alignSelf: 'center',
-                        padding: 4,
-                      }}>
+                    <View style={styles.imageViewStyle}>
                       <Image
                         source={{uri: imageData}}
-                        style={{
-                          height: 330,
-                          width: 375,
-                          borderRadius: 10,
-                          borderWidth: 1,
-                          alignSelf: 'center',
-                        }}
+                        style={styles.modalMediaStyle}
                         resizeMode="stretch"
                       />
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'flex-end',
-                          marginVertical: hp(7),
-                          alignSelf: 'center',
-                        }}>
+                      <View style={styles.modalButtonStyle}>
                         <TouchableOpacity
                           style={styles.postCancelButtonStyle}
                           onPress={() => {
@@ -514,29 +446,13 @@ const ChatScreen = () => {
                       </View>
                     </View>
                   ) : (
-                    <View
-                      style={{
-                        alignSelf: 'center',
-                        padding: 4,
-                      }}>
+                    <View style={styles.imageViewStyle}>
                       <Video
                         source={{uri: videoData}}
-                        style={{
-                          height: 330,
-                          width: 375,
-                          borderRadius: 10,
-                          borderWidth: 1,
-                          alignSelf: 'center',
-                        }}
+                        style={styles.modalMediaStyle}
                         resizeMode="stretch"
                       />
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'flex-end',
-                          marginVertical: hp(7),
-                          alignSelf: 'center',
-                        }}>
+                      <View style={styles.modalButtonStyle}>
                         <TouchableOpacity
                           style={styles.postCancelButtonStyle}
                           onPress={() => {
@@ -561,7 +477,7 @@ const ChatScreen = () => {
                 </View>
               ) : (
                 <View>
-                  <View style={{flexDirection: 'row', alignSelf: 'center'}}>
+                  <View style={styles.photovideoButtonStyle}>
                     <TouchableOpacity
                       style={styles.Buttonstyle}
                       onPress={openImageGallary}>
@@ -602,7 +518,7 @@ const styles = StyleSheet.create({
     width: hp(6.14),
     borderRadius: 100,
     position: 'absolute',
-    right: 290,
+    right: 320,
   },
   ProfileStyle1: {
     height: hp(3.8),
@@ -613,7 +529,7 @@ const styles = StyleSheet.create({
   nameTextStyle: {
     fontWeight: 'bold',
     fontSize: fs(17, 812),
-    marginHorizontal: 120,
+    marginHorizontal: 80,
     marginBottom: 5,
   },
   inputStyle: {
@@ -679,4 +595,106 @@ const styles = StyleSheet.create({
     fontSize: fs(17, 812),
     fontWeight: 'bold',
   },
+  timeTextStyle: {
+    alignSelf: 'center',
+    color: 'grey',
+  },
+  headerViewStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 10,
+  },
+  backButtonTouchStyle: {
+    marginTop: 6,
+    marginLeft: 20,
+  },
+  headerProfileStyle: {
+    flexDirection: 'row',
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  flatlistViewStyle: {
+    width: '100%',
+    alignSelf: 'center',
+    height: hp(80.8),
+  },
+  messageContainerViewStyle: {
+    borderRadius: 4,
+    marginVertical: 3,
+    padding: 4,
+    flexDirection: 'row',
+  },
+  messageViewStyle: {
+    borderWidth: 1,
+    marginHorizontal: 5,
+    padding: 4,
+    borderRadius: 6,
+  },
+  messageMediaStyle: {
+    height: 200,
+    width: 200,
+  },
+  messageProfilePicStyle: {
+    height: 30,
+    width: 30,
+    borderRadius: 100,
+  },
+  textMessageStyle: {
+    fontSize: fs(18, 812),
+    fontWeight: '600',
+  },
+  textMessageTimeStyle: {
+    color: 'grey',
+    fontSize: fs(12, 812),
+  },
+  messageInputStyle: {
+    width: wp(55),
+    marginLeft: wp(4),
+    justifyContent: 'center',
+  },
+  gallaryStyle: {
+    marginTop: hp(0.8),
+    marginLeft: 10,
+    marginRight: 10,
+  },
+  gallaryIconStyle: {
+    height: 30,
+    width: 30,
+    tintColor: 'grey',
+  },
+  sendArrowButtonStyle: {
+    marginTop: hp(0.8),
+    marginRight: 10,
+  },
+  modalStyle: {
+    justifyContent: 'flex-end',
+    margin: 0,
+  },
+  modalViewStyle: {
+    backgroundColor: 'white',
+    padding: 10,
+    borderRadius: 12,
+  },
+  imageViewStyle: {
+    alignSelf: 'center',
+    padding: 4,
+  },
+  modalMediaStyle: {
+    height: 330,
+    width: 375,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignSelf: 'center',
+  },
+  modalButtonStyle: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginVertical: hp(7),
+    alignSelf: 'center',
+  },
+  photovideoButtonStyle:{
+    flexDirection: 'row', 
+    alignSelf: 'center'
+  }
 });

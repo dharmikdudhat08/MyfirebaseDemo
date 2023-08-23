@@ -28,22 +28,33 @@ const AlluserList = () => {
   const [following, setFollowing] = useState(false);
   const [perticularIndex, setPerticularIndex] = useState(null);
   const [updatedData, setUpdatedData] = useState([]);
+  const [state, setState] = useState('');
   // const []
 
   useEffect(() => {
     name();
-  },[]);
+  }, []);
 
-console.log('all', allUserData)
+  console.log('all', allUserData);
 
   const name = async () => {
-    const user = await firestore().collection('User_Details').get();
-    setAllUserData(user?.docs);
+    const user = await firestore()
+      .collection('User_Details')
+      .onSnapshot(response => {
+        const items = [];
+        response.forEach(snapshot => {
+          items.push({
+            id: snapshot.id,
+            ...snapshot.data(),
+          });
+        });
+        setAllUserData(items);
+      });
     // console.log("+++",user?.docs)
   };
 
   const onFollow = uId => {
-    console.log(uId,"follow")
+    console.log(uId, 'follow');
     const userId = auth().currentUser.uid;
     try {
       firestore()
@@ -76,59 +87,36 @@ console.log('all', allUserData)
       console.log(error);
     }
   };
-  const onUnFollow = uId => {
+  const onUnFollow = async uId => {
     const userId = auth().currentUser.uid;
-    console.log(uId,"UnFollow");
-    firestore()
+    console.log(uId, 'UnFollow');
+
+    const D = await firestore().collection('User_Details').doc(uId).get();
+    const filterData = D?._data?.followers?.filter(
+      a => a !== auth().currentUser.uid,
+    );
+    console.log(filterData, '(*)(*)(*)(*)(*)(*)(*)');
+    await firestore().collection('User_Details').doc(uId).update({
+      followers: filterData,
+    });
+
+    await firestore()
       .collection('User_Details')
-      .doc(uId)
+      .doc(userId)
       .get()
-      .then(async res => {
-        const D = await firestore().collection('User_Details').doc(uId).get();
-        const filterData = D?._data?.followers?.filter(
-          a => a !== auth().currentUser.uid,
-        );
-        console.log(filterData, '(*)(*)(*)(*)(*)(*)(*)');
-        await firestore().collection('User_Details').doc(uId).update({
-          followers: filterData,
+      .then(async response => {
+        const filteredData = response._data.following.filter(a => a !== uId);
+        await firestore().collection('User_Details').doc(userId).update({
+          following: filteredData,
         });
-      })
-      .then(async () => {
-        await firestore()
-          .collection('User_Details')
-          .doc(userId)
-          .get()
-          .then(async response => {
-            const filteredData = response._data.following.filter(
-              a => a !== uId,
-            );
-            await firestore().collection('User_Details').doc(userId).update({
-              following: filteredData,
-            });
-          });
       });
   };
   const handleSearch = text => {
     const formattedQuery = text.toLowerCase();
-  
-    let tempData = [];
-    for (let x in allUserData) {
-      tempData.push({
-        profilePic: allUserData[x]._data.profilePic,
-        userName: allUserData[x]._data.userName,
-        name: allUserData[x]._data.name,
-        uid: allUserData[x]._data.uid,
-        following: allUserData[x]._data.following,
-        followers: allUserData[x]._data.followers,
-      });
-    }
-    const filteredData = tempData.filter(item =>
-    item.userName.length<=0?
-      console.log('first is null')
-      :item.userName.includes(formattedQuery),
-    
+    const filteredData = allUserData.filter(item =>
+      item.userName.includes(formattedQuery),
     );
-    console.log(filteredData);
+    console.log(filteredData, '14253734653746');
     setUpdatedData(filteredData);
   };
   return (
@@ -152,19 +140,18 @@ console.log('all', allUserData)
             fontSize={fs(20, 812)}
             placeholderTextColor={'#D3D3D3'}
             style={{marginHorizontal: 10, width: '70%'}}
-            onChangeText={txt => handleSearch(txt)}
+            onChangeText={txt => {
+              handleSearch(txt);
+              setState(txt);
+            }}
           />
         </View>
         <FlatList
-          data={updatedData  ? updatedData : allUserData}
+          data={state ? updatedData : allUserData}
           // data={allUserData?allUserData:updatedData}
 
           renderItem={({item, index}) => {
-            if (
-              updatedData
-                ? item?.uid != auth().currentUser.uid
-                : item?._data?.uid != auth().currentUser.uid
-            ) {
+            if (item?.id != auth().currentUser.uid) {
               return (
                 <View
                   style={{
@@ -172,57 +159,37 @@ console.log('all', allUserData)
                     justifyContent: 'space-between',
                   }}>
                   <View style={styles.profilePicViewStyle}>
-                    <ProfilePic imageStyle={styles.imageStyle} />
+                    <ProfilePic
+                      imageData={item.profilePic}
+                      imageStyle={styles.imageStyle}
+                    />
                     <View style={{marginBottom: hp(1.5)}}>
                       <Text style={styles.followingFontStyle}>
-                        {updatedData ? item.userName : item?._data?.userName}
+                        {item?.userName}
                       </Text>
                       <Text style={styles.followingFontStyle1}>
-                        {updatedData ? item.name : item?._data?.name}
+                        {item.name}
                       </Text>
                     </View>
                   </View>
 
                   <TouchableOpacity
                     onPress={() => {
-                      updatedData
-                        ? item?.followers.some(
-                            a => a === auth().currentUser.uid,
-                          ) === true
-                          ? onUnFollow(item?.uid)
-                          : onFollow(item?.uid)
-                        : item?._data?.followers.some(
-                            a => a === auth().currentUser.uid,
-                          ) === true
-                        ? onUnFollow(item?._data.uid)
-                        : onFollow(item?._data.uid);
+                      item?.followers.some(
+                        a => a === auth().currentUser.uid,
+                      ) === true
+                        ? onUnFollow(item?.uid)
+                        : onFollow(item?.uid);
                     }}
                     style={
-                      updatedData
-                        ? item?.followers.some(
-                            a => a === auth().currentUser.uid,
-                          ) === true
-                          ? styles.followbuttonStyle1
-                          : styles.followbuttonStyle
-                        : item?._data?.followers.some(
-                            a => a === auth().currentUser.uid,
-                          ) === true
+                      item?.followers.some(
+                        a => a === auth().currentUser.uid,
+                      ) === true
                         ? styles.followbuttonStyle1
                         : styles.followbuttonStyle
                     }>
-                    {updatedData ? (
-                      item?.followers.some(
-                        a => a === auth().currentUser.uid,
-                      ) === true ? (
-                        <Text style={styles.followButtonFontStyle1}>
-                          Following
-                        </Text>
-                      ) : (
-                        <Text style={styles.followButtonFontStyle}>Follow</Text>
-                      )
-                    ) : item?._data?.followers.some(
-                        a => a === auth().currentUser.uid,
-                      ) === true ? (
+                    {item?.followers.some(a => a === auth().currentUser.uid) ===
+                    true ? (
                       <Text style={styles.followButtonFontStyle1}>
                         Following
                       </Text>

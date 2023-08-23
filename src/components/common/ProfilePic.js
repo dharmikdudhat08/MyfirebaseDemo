@@ -12,8 +12,8 @@ import { icon, image } from '../../helpers/ImageHelper';
 import ImagePicker from 'react-native-image-crop-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const ProfilePic = ({imageStyle}) => {
-    const [imageData, setImageData] = useState('');
+const ProfilePic = ({imageStyle,imageData}) => {
+   
 
   const openGallary = () => {
     try {
@@ -33,7 +33,7 @@ const ProfilePic = ({imageStyle}) => {
     }
   }
   return (
-    <TouchableOpacity onPress={openGallary}>
+    <TouchableOpacity onPress={()=>{}}>
     {!imageData ?
       <Image source={icon.account} style={imageStyle} resizeMode='stretch'/>
       :

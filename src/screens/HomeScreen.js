@@ -24,6 +24,7 @@ import {FlashList} from '@shopify/flash-list';
 import Modal from 'react-native-modal';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 
+
 const HomeScreen = ({navigation}) => {
   const isFocused = useIsFocused();
   const [likeIs, setLikeIs] = useState('');
@@ -41,7 +42,6 @@ const HomeScreen = ({navigation}) => {
   const [profilepic, setProfilePic] = useState('');
   const [firebaseCommentData, setFirebaseCommentData] = useState([]);
 
-  // const navigation = useNavigation();
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
@@ -72,7 +72,6 @@ const HomeScreen = ({navigation}) => {
     }, 1000);
   }, []);
   const onSave = async postId => {
-    console.log(postId, '9090909099');
     const userId = auth().currentUser.uid;
     await firestore()
       .collection('Post')
@@ -98,10 +97,8 @@ const HomeScreen = ({navigation}) => {
     })
   };
   const onUnSave = async postId => {
-    console.log(postId, 'unsave');
     const userId = auth().currentUser.uid;
     const D = await firestore().collection('Post').doc(postId).get();
-    console.log(D._data.SavedUser);
     const filteredData = D._data.SavedUser.filter(
       a => a !== auth().currentUser.uid,
     );
@@ -147,8 +144,6 @@ const HomeScreen = ({navigation}) => {
     });
   };
   const onComment = async () => {
-    console.log(postid, '&&&&&&&&');
-    console.log(userName, '&&&&&&&&');
     if (comment) {
       try {
         await firestore()
@@ -161,9 +156,6 @@ const HomeScreen = ({navigation}) => {
               profilePic: profilepic,
             }),
           })
-          .then(() => {
-            console.log('update done!!!');
-          });
       } catch (error) {
         console.log(error);
       }
@@ -177,13 +169,10 @@ const HomeScreen = ({navigation}) => {
         .doc(userId)
         .get()
         .then(res => {
-          console.log(res);
-
           setName(res._data.name);
           setProfilePic(res._data.profilePic);
           setUserName(res._data.userName);
         });
-      console.log(postId, '**********');
       setPostid(postId);
       firestore()
         .collection('Post')
@@ -236,7 +225,6 @@ const HomeScreen = ({navigation}) => {
           <FlatList
             data={firebaseImageData}
             renderItem={({item, index}) => {
-              console.log(item.mediaType);
               return (
                 <View style={styles.flatListViewStyle}>
                   <View style={{flexDirection: 'row', width: '90%'}}>
@@ -318,7 +306,6 @@ const HomeScreen = ({navigation}) => {
                           color: 'grey',
                           fontSize: fs(20, 812),
                           marginTop: hp(0.08),
-                          // marginLeft: wp(0.4),
                         }}>
                         {item.commentData.length}
                       </Text>
@@ -357,7 +344,7 @@ const HomeScreen = ({navigation}) => {
             onBackdropPress={() => {
               toggleModal();
             }}
-            swipeDirection={['down']} // Allow swiping down to close the modal
+            swipeDirection={['down']}
             style={{justifyContent: 'flex-end', margin: 0}}>
             <View
               style={{

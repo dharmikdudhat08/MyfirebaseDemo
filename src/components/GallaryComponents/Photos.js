@@ -17,63 +17,35 @@ const Photos = () => {
   const [firebaseImageData, setfirebaseImageData] = useState([]);
   useEffect(() => {
     imageData();
-    // Item()
   }, []);
-
-  const imageData = async () => {
-    let tempData = [];
-    const uid = auth().currentUser.uid ;
-    console.log('====================================');
-    console.log(uid);
-    console.log('====================================');
-    await firestore()
-      .collection('User_Details')
-      .doc(`${uid}`)
-      .get()
-      .then(user => {
-        let tempData = [];
-        for (let x in user._data.urldata) {
-          console.log(user?._data?.urldata[x]?.postId, 'helo');
-          firestore()
-            .collection('Post')
-            .doc(user?._data?.urldata[x]?.postId)
-            .get()
-            .then(res => {
-              console.log(res?._data?.url, '90909009');
-              if (res?._data?.mediaType) {
-                tempData.push({
-                  postid: user?._data?.urldata[x]?.postId,
-                  path: res._data.url,
-                  profilepic: res._data.profilePic,
-                  SavedUser: res._data.SavedUser,
-                  isLikedUser: res._data.isLikedUser,
-                  comment: res._data.commentData,
-                  count: res._data.isLikedUser.length,
-                  commentCount: res._data.commentData.length,
-                  caption: res._data.caption,
-                  location: res._data.location,
-                  username: res._data.userName,
-                  uidValue: res._data.uid,
-                });
-              }
-              else{
-                null
-              }
-              setfirebaseImageData(tempData);
+  const imageData = () => {
+    const uid = auth().currentUser.uid;
+    firestore()
+      .collection('Post')
+      .onSnapshot(conso => {
+        const items = [];
+        conso.forEach(documentSnapshot => {
+          if (documentSnapshot._data.uid == auth().currentUser.uid) {
+            items.push({
+              id: documentSnapshot.id,
+              ...documentSnapshot.data(),
             });
-        }
+          }
+        });
+        setfirebaseImageData(items);
       });
   };
+  
   const Item = ({item}) => {
-    console.log(item.item.path, '*****)(()()()()(');
-
     return (
       <TouchableOpacity>
-        <Image
-          source={{uri: item.item.path}}
-          style={styles.imageStyle}
-          resizeMode="stretch"
-        />
+        {item.item.mediaType ? (
+          <Image
+            source={{uri: item.item.url}}
+            style={styles.imageStyle}
+            resizeMode="stretch"
+          />
+        ) : null}
       </TouchableOpacity>
     );
   };

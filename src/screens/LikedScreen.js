@@ -44,74 +44,69 @@ const LikedScreen = () => {
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
-  
-  useEffect(() => {
-    // onScreen();
-    const uid = auth().currentUser.uid;
-  //  const imageData = useMemo(()=>{
 
-  firestore()
+  useEffect(() => {
+    imageData();
+  }, []);
+  const imageData = () => {
+    const uid = auth().currentUser.uid;
+    firestore()
       .collection('User_Details')
       .doc(`${uid}`)
       .get()
       .then(async user => {
-        // console.log('UID---->', user._data.SavedPost);
         setUserName(user._data.userName);
-        setOriginalName(user._data.name);
-        let tempData = [];
-        for(let x in user._data.SavedPost){
-          // console.log(user._data.SavedPost[x].savedPost)
-          firestore()
-            .collection('Post')
-            .doc(user._data.SavedPost[x].savedPost)
-            .get()
-            .then(res => {
-              // console.log(res._data.url, '90909009');
-              if (res._data.mediaType) {
-                tempData.push({
-                  postid:user._data.SavedPost[x].savedPost,
-                  path: res._data.url,
-                  profilepic: res._data.profilePic,
-                  SavedUser: res._data.SavedUser,
-                  isLikedUser: res._data.isLikedUser,
-                  comment: res._data.commentData,
-                  count: res._data.isLikedUser.length,
-                  commentCount: res._data.commentData.length,
-                  caption: res._data.caption,
-                  location: res._data.location,
-                  username: res._data.userName,
-                  uidValue: res._data.uid,
-                });
-              } else {
-                tempData.push({
-                  postid: user._data.SavedPost[x].savedPost,
-                  vidoPath: res._data.url,
-                  profilepic: res._data.profilePic,
-                  SavedUser: res._data.SavedUser,
-                  isLikedUser: res._data.isLikedUser,
-                  comment: res._data.commentData,
-                  count: res._data.isLikedUser.length,
-                  commentCount: res._data.commentData.length,
-                  caption: res._data.caption,
-                  location: res._data.location,
-                  username: res._data.userName,
-                  uidValue: res._data.uid,
-                });
-              }
-              setfirebaseImageData(tempData);
-              // 
-            });
+        setOriginalName(user._data.name);ð
+      })
+    //     const items = [];
+    //     for (let x in user._data.SavedPost) {
+    //       firestore()
+    //         .collection('Post')
+    //         .doc(user._data.SavedPost[x].savedPost)
+    //         .onSnapshot(response => {
+    //           console.log(user._data.SavedPost[x].savedPost)
+    //           items.push({
+    //             postId: user._data.SavedPost[x].savedPost,
+    //             ...response.data(),
+    //           });
+    //         });
+    //         setfirebaseImageData(items);
+    //         console.log(items, '%^&^%&^%&^%&^%');
+    //     }
+    //   });
+    firestore()
+      .collection('Post')
+      .onSnapshot(response => {
+        console.log(response._docs._data, 'heyheyhye');
+        const items = [];
+        response.forEach(documentSnapshot => {
+          items.push({
+            id: documentSnapshot.id,
+            ...documentSnapshot.data(),
+          });
+        });
+        const tempData = [];
+        for (let x in items) {
+          for (let y in items[x].SavedUser) {
+            if (items[x].SavedUser[y] == auth().currentUser.uid) {
+              tempData.push({
+                profilePic: items[x].profilePic,
+                userName: items[x].userName,
+                url: items[x].url,
+                mediaType: items[x].mediaType,
+                location: items[x].location,
+                isLikedUser: items[x].isLikedUser,
+                commentData: items[x].commentData,
+                SavedUser: items[x].SavedUser,
+                postId: items[x].id,
+              });
+            }
+          }
         }
-       
-    })
-  }, []);
-  // }, [firebaseImageData]);
-              // console.log(firebaseImageData)
-  
-  // const onScreen = async () => {
-  //   const uid = auth().currentUser.uid;
-    
-  // };
+        setfirebaseImageData(tempData);
+        console.log(tempData);
+      });
+  };
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setTimeout(() => {
@@ -144,44 +139,38 @@ const LikedScreen = () => {
           });
       });
   };
-  const onUnSave = postId => {
+  const onUnSave = async postId => {
     console.log(postId, 'unsave');
     const userId = auth().currentUser.uid;
-    firestore()
+
+    const D = await firestore().collection('Post').doc(postId).get();
+    const filteredData = D._data.SavedUser.filter(
+      a => a !== auth().currentUser.uid,
+    );
+    await firestore()
       .collection('Post')
       .doc(postId)
-      .get()
-      .then(async res => {
-        const D = await firestore().collection('Post').doc(postId).get();
-        // console.log(D, 'heyheyheyheyheyhey');
-        const filteredData = D._data.SavedUser.filter(
-          a => a !== auth().currentUser.uid,
-        );
-        await firestore()
-          .collection('Post')
-          .doc(postId)
+      .update({
+        SavedUser: filteredData,
+      })
+      .then(() => {
+        firestore()
+          .collection('User_Details')
+          .doc(userId)
           .update({
-            SavedUser: filteredData,
-          })
-          .then(() => {
-            firestore()
-              .collection('User_Details')
-              .doc(userId)
-              .update({
-                SavedPost: firestore.FieldValue.arrayRemove({
-                  savedPost: postId,
-                }),
-              });
+            SavedPost: firestore.FieldValue.arrayRemove({
+              savedPost: postId,
+            }),
           });
       });
   };
-  const onLike = postId => {
-    firestore()
+  const onLike = async postId => {
+    const userId = auth().currentUser.uid;
+    await firestore()
       .collection('Post')
       .doc(postId)
       .get()
       .then(async res => {
-        const userId = auth().currentUser.uid;
         await firestore()
           .collection('Post')
           .doc(postId)
@@ -190,21 +179,15 @@ const LikedScreen = () => {
           });
       });
   };
-  const UnLike = postId => {
-    console.log(postId);
-    firestore()
-      .collection('Post')
-      .doc(postId)
-      .get()
-      .then(async res => {
-        const D = await firestore().collection('Post').doc(postId).get();
-        const filteData = D._data.isLikedUser.filter(
-          a => a !== auth().currentUser.uid,
-        );
-        await firestore().collection('Post').doc(postId).update({
-          isLikedUser: filteData,
-        });
-      });
+  const UnLike = async postId => {
+    const D = await firestore().collection('Post').doc(postId).get();
+
+    const filterData = D._data.isLikedUser.filter(
+      a => a !== auth().currentUser.uid,
+    );
+    await firestore().collection('Post').doc(postId).update({
+      isLikedUser: filterData,
+    });
   };
   const onComment = async () => {
     console.log(postid, '&&&&&&&&');
@@ -238,11 +221,6 @@ const LikedScreen = () => {
         .doc(userId)
         .get()
         .then(res => {
-          // console.log('====================================');
-          console.log(res);
-          // console.log('====================================');
-          // console.log(res._data.name);
-          // console.log(res._data.userName);
           setName(res._data.name);
           setProfilePic(res._data.profilePic);
           setUserName(res._data.userName);
@@ -295,33 +273,35 @@ const LikedScreen = () => {
             data={firebaseImageData}
             renderItem={({item, index}) => {
               // console.log(item.SavedUser,"0909090909")
+
+              console.log(item.postId);
               return (
                 <View style={styles.flatListViewStyle}>
                   <View style={{flexDirection: 'row', width: '90%'}}>
                     <Image
                       source={
-                        item.profilepic ? {uri: item.profilepic} : icon.account
+                        item.profilePic ? {uri: item.profilePic} : icon.account
                       }
                       style={styles.ProfileStyle}
                       resizeMode="stretch"
                     />
                     <Text style={styles.nameTextStyle}>
-                      {item.username}
+                      {item.userName}
                       {'\n'}
                       <Text style={{fontWeight: 'normal', color: 'grey'}}>
                         {item.location}
                       </Text>
                     </Text>
                   </View>
-                  {item.path ? (
+                  {item.mediaType ? (
                     <Image
-                      source={{uri: item.path}}
+                      source={{uri: item.url}}
                       style={styles.postStyle}
                       resizeMode="stretch"
                     />
                   ) : (
                     <Video
-                      source={{uri: item.vidoPath}}
+                      source={{uri: item.url}}
                       style={styles.postStyle}
                       controls={true}
                       resizeMode="stretch"
@@ -334,8 +314,8 @@ const LikedScreen = () => {
                           item.isLikedUser.some(
                             a => a === auth().currentUser.uid,
                           ) === true
-                            ? UnLike(item.postid)
-                            : onLike(item.postid);
+                            ? UnLike(item.postId)
+                            : onLike(item.postId);
                         }}>
                         <Image
                           source={
@@ -357,12 +337,12 @@ const LikedScreen = () => {
                           marginTop: hp(0.2),
                           marginLeft: wp(0.7),
                         }}>
-                        {item.count}
+                        {item.isLikedUser.length}
                       </Text>
                       <TouchableOpacity
                         onPress={() => {
                           toggleModal();
-                          getCommentData(item.postid);
+                          getCommentData(item.postId);
                         }}>
                         <Image
                           source={icon.comment}
@@ -378,7 +358,7 @@ const LikedScreen = () => {
                           marginTop: hp(0.08),
                           // marginLeft: wp(0.4),
                         }}>
-                        {item.commentCount}
+                        {item.commentData.length}
                       </Text>
                     </View>
                     <TouchableOpacity
@@ -387,8 +367,8 @@ const LikedScreen = () => {
                         item?.SavedUser?.some(
                           a => a === auth().currentUser.uid,
                         ) === true
-                          ? onUnSave(item.postid)
-                          : onSave(item.postid);
+                          ? onUnSave(item.postId)
+                          : onSave(item.postId);
                       }}>
                       <Image
                         source={

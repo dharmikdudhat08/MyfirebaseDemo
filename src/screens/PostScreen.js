@@ -38,6 +38,7 @@ const PostScreen = ({navigation}) => {
   const [path, setPath] = useState();
   const [imageurl, setImageurl] = useState({});
   const [videourl, setVideourl] = useState({});
+  const [peofilePic,setProfilePic] = useState();
 
   useEffect(() => {
     getUid();
@@ -62,6 +63,7 @@ const PostScreen = ({navigation}) => {
         setName(res._data.name);
         setUserName(res._data.userName);
         setPhoneNo(res._data.phoneNo);
+        setProfilePic(res._data.profilePic)
       });
   };
 
@@ -105,7 +107,7 @@ const PostScreen = ({navigation}) => {
   const onPostPress = async () => {
     setCount(count + 1);
     console.log('uid-----====----=-=-=-=-=-=>', uidValue);
-    const profilePic = await AsyncStorage.getItem('PROFILE_PIC');
+   
     try {
       if (imageData) {
         const now = new Date();
@@ -136,12 +138,15 @@ const PostScreen = ({navigation}) => {
                   url: res,
                   location: location,
                   uid: uidValue,
+                  SavedUser:[],
                   isLikedUser: [],
                   commentData: [],
                   mediaType: 'image',
                 });
                 console.log(response, 'fhwiefhiweur121243446723447634');
                 setImageData(null);
+                setCaption(null);
+                setLocation(null);
               });
           });
         setImageData(null);
@@ -171,6 +176,7 @@ const PostScreen = ({navigation}) => {
                   caption: caption,
                   isLikedUser: [],
                   commentData: [],
+                  SavedUser:[],
                   url: res,
                   location: location,
                   uid: uidValue,
@@ -180,6 +186,8 @@ const PostScreen = ({navigation}) => {
           });
         console.log('file upload success!');
         setVideoData(null);
+        setCaption(null);
+        setLocation(null);
       } else {
         null;
       }
@@ -215,6 +223,7 @@ const PostScreen = ({navigation}) => {
           />
           <TextInput
             placeholder="Add location"
+            value={location}
             autoCapitalize="none"
             autoCorrect={false}
             placeholderTextColor={'#D3D3D3'}
@@ -231,6 +240,7 @@ const PostScreen = ({navigation}) => {
           />
           <TextInput
             placeholder="Caption"
+            value={caption}
             autoCapitalize="none"
             autoCorrect={false}
             placeholderTextColor={'#D3D3D3'}
