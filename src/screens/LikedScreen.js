@@ -58,22 +58,6 @@ const LikedScreen = () => {
         setUserName(user._data.userName);
         setOriginalName(user._data.name);ð
       })
-    //     const items = [];
-    //     for (let x in user._data.SavedPost) {
-    //       firestore()
-    //         .collection('Post')
-    //         .doc(user._data.SavedPost[x].savedPost)
-    //         .onSnapshot(response => {
-    //           console.log(user._data.SavedPost[x].savedPost)
-    //           items.push({
-    //             postId: user._data.SavedPost[x].savedPost,
-    //             ...response.data(),
-    //           });
-    //         });
-    //         setfirebaseImageData(items);
-    //         console.log(items, '%^&^%&^%&^%&^%');
-    //     }
-    //   });
     firestore()
       .collection('Post')
       .onSnapshot(response => {
@@ -104,7 +88,6 @@ const LikedScreen = () => {
           }
         }
         setfirebaseImageData(tempData);
-        console.log(tempData);
       });
   };
   const onRefresh = useCallback(() => {
@@ -190,8 +173,6 @@ const LikedScreen = () => {
     });
   };
   const onComment = async () => {
-    console.log(postid, '&&&&&&&&');
-    console.log(userName, '&&&&&&&&');
     if (comment) {
       try {
         await firestore()
@@ -206,7 +187,6 @@ const LikedScreen = () => {
           })
           .then(() => {
             console.log('update done!!!');
-            // setPostid(null)
           });
       } catch (error) {
         console.log(error);
@@ -225,7 +205,6 @@ const LikedScreen = () => {
           setProfilePic(res._data.profilePic);
           setUserName(res._data.userName);
         });
-      console.log(postId, '**********');
       setPostid(postId);
       firestore()
         .collection('Post')
@@ -258,7 +237,7 @@ const LikedScreen = () => {
           />
         </View>
         <View style={styles.profilePicViewStyle}>
-          <ProfilePic imageStyle={styles.imageStyle} />
+          <ProfilePic imageStyle={styles.imageStyle}/>
           <View style={{marginBottom: hp(1.5)}}>
             <Text style={styles.fontStyle}>{userName}</Text>
             <Text style={styles.fontStyle1}>{originalName}</Text>
@@ -272,9 +251,6 @@ const LikedScreen = () => {
           <FlatList
             data={firebaseImageData}
             renderItem={({item, index}) => {
-              // console.log(item.SavedUser,"0909090909")
-
-              console.log(item.postId);
               return (
                 <View style={styles.flatListViewStyle}>
                   <View style={{flexDirection: 'row', width: '90%'}}>

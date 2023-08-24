@@ -35,8 +35,6 @@ const AlluserList = () => {
     name();
   }, []);
 
-  console.log('all', allUserData);
-
   const name = async () => {
     const user = await firestore()
       .collection('User_Details')
@@ -50,7 +48,6 @@ const AlluserList = () => {
         });
         setAllUserData(items);
       });
-    // console.log("+++",user?.docs)
   };
 
   const onFollow = uId => {
@@ -130,7 +127,7 @@ const AlluserList = () => {
         <View style={styles.inputStyle}>
           <Image
             source={icon.search}
-            style={{height: 30, width: 30, tintColor: 'grey'}}
+            style={styles.searchBarIconStyle}
             resizeMode="contain"
           />
           <TextInput
@@ -139,7 +136,7 @@ const AlluserList = () => {
             autoCorrect={false}
             fontSize={fs(20, 812)}
             placeholderTextColor={'#D3D3D3'}
-            style={{marginHorizontal: 10, width: '70%'}}
+            style={styles.searchBarInputStyle}
             onChangeText={txt => {
               handleSearch(txt);
               setState(txt);
@@ -148,8 +145,6 @@ const AlluserList = () => {
         </View>
         <FlatList
           data={state ? updatedData : allUserData}
-          // data={allUserData?allUserData:updatedData}
-
           renderItem={({item, index}) => {
             if (item?.id != auth().currentUser.uid) {
               return (
@@ -163,7 +158,7 @@ const AlluserList = () => {
                       imageData={item.profilePic}
                       imageStyle={styles.imageStyle}
                     />
-                    <View style={{marginBottom: hp(1.5)}}>
+                    <View style={styles.userNameViewStyle}>
                       <Text style={styles.followingFontStyle}>
                         {item?.userName}
                       </Text>
@@ -244,13 +239,11 @@ const styles = StyleSheet.create({
     fontSize: fs(20, 812),
     marginHorizontal: wp(4),
     marginVertical: hp(0.61),
-    // fontWeight:'bold'
   },
   fontStyle1: {
     fontSize: fs(17, 812),
     marginHorizontal: 15,
     color: 'grey',
-    // fontWeight:'bold'
   },
   headerFontStyle: {
     fontSize: fs(22, 812),
@@ -310,4 +303,16 @@ const styles = StyleSheet.create({
     marginTop: hp(3),
     flexDirection: 'row',
   },
+  userNameViewStyle:{
+    marginBottom: hp(1.5)
+  },
+  searchBarIconStyle:{
+    height: 30, 
+    width: 30, 
+    tintColor: 'grey'
+  },
+  searchBarInputStyle:{
+    marginHorizontal: 10, 
+    width: '70%'
+  }
 });

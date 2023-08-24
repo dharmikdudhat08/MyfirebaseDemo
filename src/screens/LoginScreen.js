@@ -27,26 +27,18 @@ const LoginScreen = ({navigation}) => {
   const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  // console.log(email,password);
 
-  const name = useSelector(state => state.users);
-  const userName = useSelector(state => state.userName);
-  const phoneNo = useSelector(state => state.phoneNumber);
-  const signup = useSelector(state => state.signup);
-
+  const data = useSelector(state => state.usersDetails);
   const onGoogleButtonPress = async () => {
     await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});
-    // Get the users ID token
+
     const {idToken} = await GoogleSignin.signIn();
 
-    // Create a Google credential with the token
     const googleCredential = auth.GoogleAuthProvider.credential(idToken);
 
-    // Sign-in the user with the credential
     return auth()
       .signInWithCredential(googleCredential)
       .then(async res => {
-        console.log('res', res.user.uid);
         dispatch({
           type: 'ID_TOKEN',
           payload: `${res.user.uid}`,
@@ -56,10 +48,7 @@ const LoginScreen = ({navigation}) => {
           .doc(`${res.user.uid}`)
           .get()
           .then(async userid => {
-            console.log(userid, 'hellohellogheoooj');
-            console.log(userid._data);
             if (userid._data) {
-              // navigation.navigate('Detail');
               navigation.navigate('Bottom');
             } else {
               navigation.navigate('Detail');
@@ -71,66 +60,52 @@ const LoginScreen = ({navigation}) => {
                 uid: `${res.user.uid}`,
               });
             await AsyncStorage.setItem('UID', `${res.user.uid}`);
-            console.log('====================================');
-            console.log(res.user.uid);
-            console.log('====================================');
           });
       });
   };
 
   const onLogin = async () => {
-    const profilePic = await AsyncStorage.getItem('PROFILE_PIC')
+    const profilePic = await AsyncStorage.getItem('PROFILE_PIC');
     try {
       await auth()
-        .signInWithEmailAndPassword(`${email}`, `${password}`)
-        .then(
-          async res => {
-            console.log('====================================');
-            console.log(res.user);
-            console.log('====================================');
-            console.log(res.user.uid, 'hello');
-            if (signup) {
-              firestore()
-                .collection('User_Details')
-                .doc(`${res.user.uid}`)
-                .set({
-                  name: `${name}`,
-                  userName: `${userName}`,
-                  phoneNo: `${phoneNo}`,
-                  uid: `${res.user.uid}`,
-                  profilePic : profilePic,
-                })
-                .then(async () => {
-                  try {
-                    await AsyncStorage.setItem('UID', res.user.uid);
-                    console.log('saved to asyncStorage');
-                    navigation.navigate('Bottom');
-                  } catch (e) {
-                    console.log(e);
-                  }
-                });
-            } else {
-              firestore()
-                .collection('User_Details')
-                .doc(`${res.user.uid}`)
-                .get()
-                .then(async () => {
-                  try {
-                    await AsyncStorage.setItem('UID', res.user.uid);
-                    console.log('saved to asyncStorage');
-                    navigation.navigate('Bottom');
-                  } catch (e) {
-                    console.log(e);
-                  }
-                });
-            }
-          },
+        .signInWithEmailAndPassword(email, password)
+        .then(async res => {
+          if (signup) {
+            firestore()
+              .collection('User_Details')
+              .doc(`${res.user.uid}`)
+              .set({
+                name: `${name}`,
+                userName: `${userName}`,
+                phoneNo: `${phoneNo}`,
+                uid: `${res.user.uid}`,
+                profilePic: profilePic,
+              })
+              .then(async () => {
+                try {
+                  await AsyncStorage.setItem('UID', res.user.uid);
 
-          // console.log("user logged in")
-        );
+                  navigation.navigate('Bottom');
+                } catch (e) {
+                  console.log(e);
+                }
+              });
+          } else {
+            firestore()
+              .collection('User_Details')
+              .doc(`${res.user.uid}`)
+              .get()
+              .then(async () => {
+                try {
+                  await AsyncStorage.setItem('UID', res.user.uid);
 
-      // storeData();
-      // navigation.navigate('Home')
+                  navigation.navigate('Bottom');
+                } catch (e) {
+                  console.log(e);
+                }
+              });
+          }
+        });
     } catch (error) {
       Alert.alert('Please Enter valid email or password');
     }

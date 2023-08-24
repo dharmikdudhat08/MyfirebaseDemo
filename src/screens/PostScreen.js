@@ -12,6 +12,7 @@ import React, {useEffect, useState} from 'react';
 import {HeaderBar, Profile, ProfilePic} from '../components';
 import {fs, hp, wp} from '../helpers/GlobalFunction';
 import {icon} from '../helpers/ImageHelper';
+import auth from '@react-native-firebase/auth';
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
@@ -38,28 +39,20 @@ const PostScreen = ({navigation}) => {
   const [path, setPath] = useState();
   const [imageurl, setImageurl] = useState({});
   const [videourl, setVideourl] = useState({});
-  const [peofilePic,setProfilePic] = useState();
+  const [profilePic,setProfilePic] = useState();
 
   useEffect(() => {
     getUid();
   });
 
   const getUid = async () => {
-    const userId = await AsyncStorage.getItem('UID');
-    // console.log('uid=======>>>>', userId);
+    const userId = auth().currentUser.uid;
     setUidValue(userId);
-
-    // console.log(userId, 'hellohellohello');
     await firestore()
       .collection('User_Details')
       .doc(userId)
       .get()
       .then(res => {
-        // console.log('====================================');
-        // console.log(res);
-        // console.log('====================================');
-        // console.log(res._data.name);
-        // console.log(res._data.userName);
         setName(res._data.name);
         setUserName(res._data.userName);
         setPhoneNo(res._data.phoneNo);
@@ -90,7 +83,6 @@ const PostScreen = ({navigation}) => {
         mediaType: 'video',
         cropping: false,
       }).then(async video => {
-        console.log(video, '-=-=-=-=-=--=-');
         setFilename(JSON.stringify(video.filename));
         setPath(video.path);
         setVideoData(video.path);
@@ -106,8 +98,6 @@ const PostScreen = ({navigation}) => {
 
   const onPostPress = async () => {
     setCount(count + 1);
-    console.log('uid-----====----=-=-=-=-=-=>', uidValue);
-   
     try {
       if (imageData) {
         const now = new Date();
@@ -118,10 +108,6 @@ const PostScreen = ({navigation}) => {
           .getDownloadURL()
           .then(res => {
             const uuid = generateUUID(20);
-            console.log('====================================');
-            console.log(imageurl, '****(*(*(*(*(*(*(*(*(*(');
-            console.log('====================================');
-
             firestore()
               .collection('User_Details')
               .doc(uidValue)
@@ -143,16 +129,12 @@ const PostScreen = ({navigation}) => {
                   commentData: [],
                   mediaType: 'image',
                 });
-                console.log(response, 'fhwiefhiweur121243446723447634');
                 setImageData(null);
                 setCaption(null);
                 setLocation(null);
               });
           });
         setImageData(null);
-        console.log('====================================');
-        console.log(imageData);
-        console.log('====================================');
       } else if (videoData) {
         await storage().ref(filename).putFile(path);
         await storage()
@@ -184,7 +166,6 @@ const PostScreen = ({navigation}) => {
                 console.log(response);
               });
           });
-        console.log('file upload success!');
         setVideoData(null);
         setCaption(null);
         setLocation(null);
@@ -192,9 +173,7 @@ const PostScreen = ({navigation}) => {
         null;
       }
     } catch (error) {
-      console.log('====================================');
       console.log(error);
-      console.log('====================================');
     }
   };
   return (

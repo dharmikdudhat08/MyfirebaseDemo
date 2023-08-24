@@ -25,7 +25,6 @@ const All = () => {
       .collection('Post')
       .onSnapshot(conso => {
         const items = [];
-        console.log(conso);
         conso.forEach(documentSnapshot => {
           if (documentSnapshot._data.uid == auth().currentUser.uid) {
             items.push({

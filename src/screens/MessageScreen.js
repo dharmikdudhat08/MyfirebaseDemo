@@ -20,6 +20,7 @@ import Modal from 'react-native-modal';
 import {fs, hp, wp} from '../helpers/GlobalFunction';
 import {icon} from '../helpers/ImageHelper';
 import {useDispatch} from 'react-redux';
+import { ChatUidDataValue } from '../redux/action/action';
 
 const MessageScreen = ({navigation}) => {
   const [messages, setMessages] = useState([]);
@@ -61,18 +62,8 @@ const MessageScreen = ({navigation}) => {
       });
   };
   const onChat = (userName, profilePic, uid) => {
-    dispatch({
-      type: 'CHAT_USER_NAME',
-      payload: userName,
-    });
-    dispatch({
-      type: 'PROFILEPIC',
-      payload: profilePic,
-    });
-    dispatch({
-      type: 'CHAT_USER_UID',
-      payload: uid,
-    });
+    const data ={userName :userName , profilePic : profilePic, uid : uid}
+    dispatch(ChatUidDataValue(data))
     navigation.navigate('Chat');
   };
 

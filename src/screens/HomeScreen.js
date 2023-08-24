@@ -24,7 +24,6 @@ import {FlashList} from '@shopify/flash-list';
 import Modal from 'react-native-modal';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 
-
 const HomeScreen = ({navigation}) => {
   const isFocused = useIsFocused();
   const [likeIs, setLikeIs] = useState('');
@@ -78,23 +77,23 @@ const HomeScreen = ({navigation}) => {
       .doc(postId)
       .get()
       .then(async res => {
-    await firestore()
-      .collection('Post')
-      .doc(postId)
-      .update({
-        SavedUser: [...res._data.SavedUser,userId],
-      })
-      .then(() => {
-        firestore()
-          .collection('User_Details')
-          .doc(userId)
+        await firestore()
+          .collection('Post')
+          .doc(postId)
           .update({
-            SavedPost: firestore.FieldValue.arrayUnion({
-              savedPost: postId,
-            }),
+            SavedUser: [...res._data.SavedUser, userId],
+          })
+          .then(() => {
+            firestore()
+              .collection('User_Details')
+              .doc(userId)
+              .update({
+                SavedPost: firestore.FieldValue.arrayUnion({
+                  savedPost: postId,
+                }),
+              });
           });
       });
-    })
   };
   const onUnSave = async postId => {
     const userId = auth().currentUser.uid;
@@ -155,7 +154,7 @@ const HomeScreen = ({navigation}) => {
               comment: comment,
               profilePic: profilepic,
             }),
-          })
+          });
       } catch (error) {
         console.log(error);
       }
@@ -208,11 +207,11 @@ const HomeScreen = ({navigation}) => {
           />
         </View>
         <TouchableOpacity
-          style={{left: 340, marginTop: 60, position: 'absolute'}}
+          style={styles.messageButtonStyle}
           onPress={() => navigation.navigate('Message')}>
           <Image
             source={icon.chat}
-            style={{height: 30, width: 30}}
+            style={styles.messageIconStyle}
             resizeMode="contain"
           />
         </TouchableOpacity>
@@ -224,10 +223,10 @@ const HomeScreen = ({navigation}) => {
           }>
           <FlatList
             data={firebaseImageData}
-            renderItem={({item, index}) => {
+            renderItem={({item}) => {
               return (
                 <View style={styles.flatListViewStyle}>
-                  <View style={{flexDirection: 'row', width: '90%'}}>
+                  <View style={styles.userDetailsStyle}>
                     <Image
                       source={
                         item.ProfilePic ? {uri: item.ProfilePic} : icon.account
@@ -238,7 +237,7 @@ const HomeScreen = ({navigation}) => {
                     <Text style={styles.nameTextStyle}>
                       {item.userName}
                       {'\n'}
-                      <Text style={{fontWeight: 'normal', color: 'grey'}}>
+                      <Text style={styles.locationStyle}>
                         {item.location}
                       </Text>
                     </Text>
@@ -280,13 +279,7 @@ const HomeScreen = ({navigation}) => {
                         />
                       </TouchableOpacity>
                       <Text
-                        style={{
-                          fontWeight: 'normal',
-                          color: 'grey',
-                          fontSize: fs(20, 812),
-                          marginTop: hp(0.2),
-                          marginLeft: wp(0.7),
-                        }}>
+                        style={styles.likeCountStyle}>
                         {item.isLikedUser.length}
                       </Text>
                       <TouchableOpacity
@@ -301,12 +294,7 @@ const HomeScreen = ({navigation}) => {
                         />
                       </TouchableOpacity>
                       <Text
-                        style={{
-                          fontWeight: 'normal',
-                          color: 'grey',
-                          fontSize: fs(20, 812),
-                          marginTop: hp(0.08),
-                        }}>
+                        style={styles.commentCountStyle}>
                         {item.commentData.length}
                       </Text>
                     </View>
@@ -345,14 +333,9 @@ const HomeScreen = ({navigation}) => {
               toggleModal();
             }}
             swipeDirection={['down']}
-            style={{justifyContent: 'flex-end', margin: 0}}>
+            style={styles.modalStyle}>
             <View
-              style={{
-                backgroundColor: 'white',
-                padding: 10,
-                height: 500,
-                borderRadius: 12,
-              }}>
+              style={styles.commentViewStyle}>
               <Profile
                 profilePicViewStyle={styles.profilePicViewStyle}
                 profileImageStyle={styles.imageStyle}
@@ -446,6 +429,17 @@ export default HomeScreen;
 const styles = StyleSheet.create({
   linearGradient: {
     flex: 1,
+  },
+  
+  commentViewStyle:{
+    backgroundColor: 'white',
+    padding: 10,
+    height: 500,
+    borderRadius: 12,
+  },
+  modalStyle:{
+    justifyContent: 'flex-end', 
+    margin: 0
   },
   flatListViewStyle: {
     justifyContent: 'center',
@@ -593,4 +587,34 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
     color: 'grey',
   },
+  messageButtonStyle:{
+    left: 340, 
+    marginTop: 60,
+    position: 'absolute'
+  },
+  messageIconStyle:{
+    height: 30, 
+    width: 30
+  },
+  userDetailsStyle:{
+    flexDirection: 'row',
+    width: '90%'
+  },
+  locationStyle:{
+    fontWeight: 'normal', 
+    color: 'grey'
+  },
+  likeCountStyle:{
+    fontWeight: 'normal',
+    color: 'grey',
+    fontSize: fs(20, 812),
+    marginTop: hp(0.2),
+    marginLeft: wp(0.7),
+  },
+  commentCountStyle:{
+    fontWeight: 'normal',
+    color: 'grey',
+    fontSize: fs(20, 812),
+    marginTop: hp(0.08),
+  }
 });

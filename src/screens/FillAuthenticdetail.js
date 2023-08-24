@@ -12,7 +12,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import {fs, hp, wp} from '../helpers/GlobalFunction';
 import {icon, image} from '../helpers/ImageHelper';
 import ImagePicker from 'react-native-image-crop-picker';
-import {ProfilePic} from '../components';
+import {ProfilePic, TextInputBar} from '../components';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useDispatch, useSelector} from 'react-redux';
@@ -22,21 +22,53 @@ const FillAuthenticdetail = ({navigation}) => {
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [phoneNo, setPhoneNo] = useState();
-  const uid = useSelector(state => state.idtoken);
+  const [imageData,setImageData] = useState();
+  const [filename, setFilename] = useState();
+  const [path, setPath] = useState();
+  const uid = auth().currentUser.uid
 
-  const onSubmit = () => {
-    firestore()
-      .collection('User_Details')
-      .doc(`${uid}`)
-      .set({
-        name: `${name}`,
-        userName: `${username}`,
-        phoneNo: `${phoneNo}`,
-        uid : `${uid}`,
-      })
-      .then(() => {
-        console.log('User added!');
-        navigation.navigate('Bottom');
+  const openGallary = () => {
+    try {
+      ImagePicker.openPicker({
+        mediaType: 'photo',
+        width: 300,
+        height: 400,
+        cropping: true,
+      }).then(async image => {
+        setImageData(image.path);
+        setFilename(JSON.stringify(image.filename));
+        setPath(image.path);
+        await AsyncStorage.setItem('PROFILE_PIC', `${image.path}`);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onSubmit = async () => {
+    await storage().ref(filename).putFile(path);
+    await storage()
+      .ref(filename)
+      .getDownloadURL()
+      .then(async res => {
+        await firestore()
+          .collection('User_Details')
+          .doc(`${uid}`)
+          .set({
+            name: `${name}`,
+            userName: `${username}`,
+            phoneNo: `${phoneNo}`,
+            uid: `${uid}`,
+            profilePic: res,
+            SavedPost: [],
+            followers: [],
+            following: [],
+            urldata: [],
+          })
+          .then(() => {
+            console.log('User added!');
+            navigation.navigate('Bottom');
+          });
       });
   };
 
@@ -44,66 +76,38 @@ const FillAuthenticdetail = ({navigation}) => {
     <LinearGradient
       colors={['#FAF0FA', '#EFFAF4', '#EDF6FF']}
       style={styles.linearGradient}>
-      <View
-        style={{
-          marginVertical: hp(10.31),
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-        <ProfilePic imageStyle={styles.imageStyle} />
-        <Text style={{fontSize: fs(15, 812)}}>Add profic pic</Text>
+      <View style={styles.profileViewStyle}>
+        <TouchableOpacity onPress={openGallary}>
+          <Image
+            source={imageData ? {uri: imageData} : icon.account}
+            style={styles.imageStyle}
+            resizeMode="stretch"
+          />
+        </TouchableOpacity>
+        <Text style={styles.profilePicTextStyle}>Add Profile Picture</Text>
       </View>
-      <View style={styles.inputStyle}>
-        <Image
-          source={icon.name}
-          style={styles.inputIconStyle}
-          resizeMode="contain"
-        />
-        <TextInput
-          style={{marginLeft: wp(4)}}
-          placeholder="Name"
-          autoCapitalize="none"
-          autoCorrect={false}
-          fontSize={fs(17, 812)}
-          placeholderTextColor={'#D3D3D3'}
-          onChangeText={txt => setName(txt)}
-        />
-      </View>
-      <View style={styles.inputStyle}>
-        <Image
-          source={icon.mention}
-          style={styles.inputIconStyle}
-          resizeMode="contain"
-        />
-        <TextInput
-          style={{marginLeft: wp(4)}}
-          placeholder="user_name"
-          autoCapitalize="none"
-          autoCorrect={false}
-          fontSize={fs(17, 812)}
-          placeholderTextColor={'#D3D3D3'}
-          onChangeText={txt => setUsername(txt)}
-        />
-      </View>
-      <View style={styles.inputStyle}>
-        <Image
-          source={icon.telephone}
-          style={styles.inputIconStyle}
-          resizeMode="contain"
-        />
-        <TextInput
-          style={{marginLeft: wp(4)}}
-          placeholder="Mobile No."
-          autoCapitalize="none"
-          autoCorrect={false}
-          fontSize={fs(17, 812)}
-          placeholderTextColor={'#D3D3D3'}
-          onChangeText={txt => setPhoneNo(txt)}
-        />
-      </View>
-
+      <TextInputBar
+        source={icon.name}
+        placeHolder={'Name'}
+        onChangeText={txt => setName(txt)}
+      />
+      <TextInputBar
+        source={icon.mention}
+        placeHolder={'user_name'}
+        onChangeText={txt => setUsername(txt)}
+      />
+      <TextInputBar
+        source={icon.telephone}
+        placeHolder={'Mobile No.'}
+        onChangeText={txt => setPhoneNo(txt)}
+      />
+      <TextInputBar
+        source={icon.mail}
+        placeHolder={'Email Address'}
+        onChangeText={txt => setEmail(txt)}
+      />
       <TouchableOpacity style={styles.buttonStyle} onPress={onSubmit}>
-        <Text style={{fontSize: fs(20, 812), color: 'white'}}>Submit</Text>
+        <Text style={styles.submitButtonStyle}>Submit</Text>
       </TouchableOpacity>
     </LinearGradient>
   );
@@ -115,6 +119,10 @@ const styles = StyleSheet.create({
   linearGradient: {
     flex: 1,
     alignItems: 'center',
+  },
+  submitButtonStyle:{
+    fontSize: fs(20, 812), 
+    color: 'white'
   },
   inputStyle: {
     backgroundColor: '#FFFEFE',
@@ -152,6 +160,13 @@ const styles = StyleSheet.create({
     width: hp(10.31),
     alignSelf: 'stretch',
     borderRadius: 100,
-    // marginVertical: hp(12.31),
+  },
+  profileViewStyle: {
+    marginVertical: hp(10.31),
+  },
+  profilePicTextStyle: {
+    fontSize: fs(17, 812),
+    alignSelf: 'center',
+    marginTop: hp(1.2),
   },
 });

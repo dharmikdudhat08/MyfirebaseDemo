@@ -7,23 +7,22 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import {HeaderBar, ProfilePic} from '../components';
 import {fs, hp, wp} from '../helpers/GlobalFunction';
 import {icon} from '../helpers/ImageHelper';
 import {useNavigation} from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-
 
 const EditScreen = () => {
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const navigation = useNavigation();
   const onSubmit = async () => {
-    const uid = await AsyncStorage.getItem('UID');
-    await firestore().collection('User_Details').doc(`${uid}`).update({
+    const uid = auth().currentUser.uid;
+    await firestore().collection('User_Details').doc(uid).update({
       name: name,
       userName: username,
     });
@@ -40,7 +39,7 @@ const EditScreen = () => {
             <Image
               source={icon.back}
               resizeMode="contain"
-              style={{height: 15, width: 15}}
+              style={styles.headerIconStyle}
             />
           </TouchableOpacity>
           <Text style={styles.headerFontStyle}>Edit Your Profile</Text>
@@ -60,7 +59,7 @@ const EditScreen = () => {
             autoCorrect={false}
             placeholderTextColor={'#D3D3D3'}
             fontSize={fs(17, 812)}
-            style={{marginLeft: wp(3)}}
+            style={styles.editInputStyle}
             onChangeText={txt => {
               setName(txt);
             }}
@@ -78,17 +77,14 @@ const EditScreen = () => {
             autoCorrect={false}
             placeholderTextColor={'#D3D3D3'}
             fontSize={fs(17, 812)}
-            style={{marginLeft: wp(3)}}
+            style={styles.editInputStyle}
             onChangeText={txt => {
               setUsername(txt);
             }}
           />
         </View>
         <View style={styles.buttonViewstyle}>
-          <TouchableOpacity
-          onPress={onSubmit}
-            // onPress={() => navigation.navigate('AllUser')}
-            style={styles.followButtonstyle}>
+          <TouchableOpacity onPress={onSubmit} style={styles.followButtonstyle}>
             <Text style={styles.followButtonfontStyle}>Submit</Text>
           </TouchableOpacity>
         </View>
@@ -148,7 +144,6 @@ const styles = StyleSheet.create({
     width: hp(10.31),
     alignSelf: 'stretch',
     borderRadius: 100,
-    // marginVertical: hp(12.31),
   },
   profileStyle: {
     justifyContent: 'center',
@@ -173,5 +168,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 15,
+  },
+  headerIconStyle: {
+    height: 15,
+    width: 15,
+  },
+  editInputStyle: {
+    marginLeft: wp(3),
   },
 });

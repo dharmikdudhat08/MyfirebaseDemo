@@ -17,61 +17,39 @@ import firestore from '@react-native-firebase/firestore';
 import {useSelector} from 'react-redux';
 import auth from '@react-native-firebase/auth';
 
-
 const ProfileScreen = ({navigation}) => {
   useEffect(() => {
     name();
-  }),[];
+  }),
+    [];
+
   const [press1, setPress1] = useState(true);
   const [press2, setPress2] = useState(false);
   const [press3, setPress3] = useState(false);
   const [userName, setUserName] = useState('');
   const [profilePic, setProfilePic] = useState('');
-  const [followersCount,setFollowersCount] = useState();
-  const [followingCount,setFollowingCount] = useState();
-
-  // useEffect(() => {}, [press1, press2, press3]);
-
-  const onPress1 = () => {
-    setPress1(true);
-    setPress2(false);
-    setPress3(false);
-    console.log('====================================');
-    console.log(press1, 'press1');
-    console.log('====================================');
-  };
+  const [followersCount, setFollowersCount] = useState();
+  const [followingCount, setFollowingCount] = useState();
   const onPress2 = () => {
     setPress2(true);
     setPress1(false);
     setPress3(false);
-    console.log('====================================');
-    console.log(press2, 'press2');
-    console.log('====================================');
   };
   const onPress3 = () => {
     setPress3(true);
     setPress2(false);
     setPress1(false);
-    console.log('====================================');
-    console.log(press3, 'press3');
-    console.log('====================================');
   };
-
   const name = async () => {
-    const uid =auth().currentUser.uid;
-    // console.log('====================================');
-    // console.log(uid);
-    // console.log('====================================');
+    const uid = auth().currentUser.uid;
     await firestore()
       .collection('User_Details')
       .doc(`${uid}`)
       .get()
       .then(user => {
         setProfilePic(user._data.profilePic);
-        console.log(user._data.profilePic)
-        setFollowersCount(user._data.followers.length)
-        setFollowingCount(user._data.following.length)
-        // console.log('UID---->', user);
+        setFollowersCount(user._data.followers.length);
+        setFollowingCount(user._data.following.length);
         setUserName(user._data.userName);
       });
   };
@@ -147,7 +125,6 @@ const ProfileScreen = ({navigation}) => {
               onPress={() => {
                 setPress1(true);
                 setPress2(false), setPress3(false);
-                console.log('press1', press1);
               }}>
               <Text
                 style={
@@ -227,7 +204,6 @@ const styles = StyleSheet.create({
     width: hp(10.31),
     alignSelf: 'stretch',
     borderRadius: 100,
-    // marginVertical: hp(12.31),
   },
   imageStyle1: {
     height: 20,

@@ -23,8 +23,6 @@ const ProfilePic = ({imageStyle,imageData}) => {
         height: 400,
         cropping: true
       }).then(async image => {
-        console.log(image, "-=-=-=-=-=--=-");
-        setImageData(image.path)
         await AsyncStorage.setItem('PROFILE_PIC', `${image.path}`);
       });
 

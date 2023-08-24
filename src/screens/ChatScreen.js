@@ -31,11 +31,7 @@ import Video from 'react-native-video';
 
 const ChatScreen = () => {
   const isFocused = useIsFocused();
-  const userName = useSelector(state => state.chatUserName);
-
-  const ProfilePic = useSelector(state => state.profilePic);
-
-  const chatUserUid = useSelector(state => state.chatUserUid);
+  const data = useSelector(state => state.chatUserValue)
   const navigation = useNavigation();
 
   const [messages, setMessages] = useState([]);
@@ -54,6 +50,7 @@ const ChatScreen = () => {
   const [caption, setCaption] = useState('');
   const [imageurl, setImageurl] = useState(null);
   const [videourl, setVideourl] = useState(null);
+  const [online,setOnline] = useState(false);
 
   const newDate = new Date();
   const updatedDate = moment(newDate).format('DD-MM-YYYY');
@@ -68,9 +65,9 @@ const ChatScreen = () => {
   const getUserDetails = async () => {
     const userId = auth().currentUser.uid;
     const docId =
-      auth().currentUser.uid > chatUserUid
-        ? chatUserUid + ' - ' + auth().currentUser.uid
-        : auth().currentUser.uid + ' - ' + chatUserUid;
+      auth().currentUser.uid > data[0].uid
+        ? data[0].uid + ' - ' + auth().currentUser.uid
+        : auth().currentUser.uid + ' - ' + data[0].uid;
     setNewUid(docId);
     await firestore()
       .collection('User_Details')
@@ -111,8 +108,8 @@ const ChatScreen = () => {
                 createdAt: firestore.Timestamp.fromDate(new Date()),
                 user: auth().currentUser.uid,
                 senderUserName: userIdName,
-                receiverUserName: userName,
-                avatar: ProfilePic,
+                receiverUserName: data[0].userName,
+                avatar: data[0].profilePic,
                 image: res,
               })
               .then(() => {
@@ -139,8 +136,8 @@ const ChatScreen = () => {
                 createdAt: firestore.Timestamp.fromDate(new Date()),
                 user: auth().currentUser.uid,
                 senderUserName: userIdName,
-                receiverUserName: userName,
-                avatar: ProfilePic,
+                receiverUserName: data[0].userName,
+                avatar: data[0].profilePic,
                 video: res,
               })
               .then(() => {
@@ -162,8 +159,8 @@ const ChatScreen = () => {
             createdAt: firestore.Timestamp.fromDate(new Date()),
             user: auth().currentUser.uid,
             senderUserName: userIdName,
-            receiverUserName: userName,
-            avatar: ProfilePic,
+            receiverUserName: data[0].userName,
+            avatar: data[0].profilePic,
           })
           .then(() => {
             console.log('done!');
@@ -217,7 +214,6 @@ const ChatScreen = () => {
     setImageurl(null);
     setVideourl(null);
   };
-  const onPostPress = async () => {};
   return (
     <LinearGradient
       colors={['#FAF0FA', '#EFFAF4', '#EDF6FF']}
@@ -235,11 +231,11 @@ const ChatScreen = () => {
           </TouchableOpacity>
           <View style={styles.headerProfileStyle}>
             <Image
-              source={ProfilePic ? {uri: ProfilePic} : icon.account}
+              source={data[0].profilePic ? {uri: data[0].profilePic} : icon.account}
               style={styles.ProfileStyle}
               resizeMode="stretch"
             />
-            <Text style={styles.nameTextStyle}>{userName}</Text>
+            <Text style={styles.nameTextStyle}>{data[0].userName}</Text>
           </View>
         </View>
 
@@ -324,7 +320,7 @@ const ChatScreen = () => {
                         },
                       ]}>
                       <Image
-                        source={ProfilePic ? {uri: ProfilePic} : icon.account}
+                        source={data[0].profilePic ? {uri:data[0].profilePic} : icon.account}
                         style={styles.messageProfilePicStyle}
                         resizeMode="stretch"
                       />

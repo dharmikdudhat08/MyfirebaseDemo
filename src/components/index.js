@@ -7,6 +7,7 @@ import HeaderBarDiff from "./common/HeaderBarDiff";
 import Videos from "./GallaryComponents/Videos";
 import All from "./GallaryComponents/All";
 import Profile from "./common/Profile";
+import TextInputBar from "./common/TextInputBar";
 export{
     ProfilePic,
     HeaderBar,
@@ -17,6 +18,6 @@ export{
     All,
     HeaderBarDiff,
     Profile,
-    
+    TextInputBar,
     
 }
