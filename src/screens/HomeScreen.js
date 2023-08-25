@@ -367,12 +367,7 @@ const HomeScreen = ({navigation}) => {
                   }}>
                   <Image
                     source={icon.send}
-                    style={{
-                      height: 25,
-                      width: 25,
-                      marginTop: 3,
-                      marginRight: 3,
-                    }}
+                    style={styles.commentSendStyle}
                     resizeMode="contain"
                   />
                 </TouchableOpacity>
@@ -383,11 +378,7 @@ const HomeScreen = ({navigation}) => {
                   renderItem={({item, index}) => {
                     return (
                       <View
-                        style={{
-                          flexDirection: 'row',
-                          width: '90%',
-                          marginVertical: 5,
-                        }}>
+                        style={styles.commentProfilePic}>
                         <Image
                           source={
                             item.profilepic
@@ -399,15 +390,11 @@ const HomeScreen = ({navigation}) => {
                         />
                         <View>
                           <Text
-                            style={{
-                              fontWeight: '600',
-                              marginHorizontal: 5,
-                              marginBottom: 5,
-                            }}>
+                            style={styles.commentUserNameStyle}>
                             {item.userName}
                           </Text>
                           <Text
-                            style={{fontWeight: 'normal', marginHorizontal: 5}}>
+                            style={styles.commentNameStyle}>
                             {item.comment}
                           </Text>
                         </View>
@@ -430,11 +417,30 @@ const styles = StyleSheet.create({
   linearGradient: {
     flex: 1,
   },
-  
+  commentNameStyle:{
+    fontWeight: 'normal', 
+    marginHorizontal: wp(1.33)
+  },
+  commentUserNameStyle:{
+    fontWeight: '600',
+    marginHorizontal:  wp(1.33),
+    marginBottom: hp(0.6),
+  },
+  commentProfilePic:{
+    flexDirection: 'row',
+    width: '90%',
+    marginVertical: hp(0.6),
+  },
+  commentSendStyle:{
+    height: hp(3.07),
+    width: hp(3.07),
+    marginTop: hp(0.35),
+    marginRight: wp(0.8),
+  },
   commentViewStyle:{
     backgroundColor: 'white',
-    padding: 10,
-    height: 500,
+    padding: hp(1.2),
+    height: hp(61.5),
     borderRadius: 12,
   },
   modalStyle:{
@@ -455,12 +461,12 @@ const styles = StyleSheet.create({
     height: hp(3.8),
     width: hp(3.8),
     borderRadius: 100,
-    marginTop: 8,
+    marginTop: hp(0.98),
   },
   nameTextStyle: {
     fontWeight: 'bold',
     fontSize: fs(17, 812),
-    marginHorizontal: 15,
+    marginHorizontal: wp(4),
   },
   buttonViewStyle: {
     flexDirection: 'row',
@@ -494,10 +500,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   modalView: {
-    margin: 20,
+    margin: hp(2.4),
     backgroundColor: 'white',
     borderRadius: 20,
-    padding: 35,
+    padding: hp(4.3),
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
@@ -510,7 +516,7 @@ const styles = StyleSheet.create({
   },
   button: {
     borderRadius: 20,
-    padding: 10,
+    padding: hp(1.2),
     elevation: 2,
   },
   buttonOpen: {
@@ -536,14 +542,14 @@ const styles = StyleSheet.create({
     marginTop: hp(2.2),
   },
   modalCloseButtonStyle: {
-    height: 40,
-    width: 40,
+    height: hp(4.9),
+    width: hp(4.9),
     backgroundColor: '#A975FF',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 100,
-    marginLeft: -20,
-    marginTop: 10,
+    marginLeft: -hp(2.4),
+    marginTop: hp(1.2),
   },
   modalCloseButtonTextStyle: {
     color: 'white',
@@ -584,17 +590,17 @@ const styles = StyleSheet.create({
   },
   fontStyle1: {
     fontSize: fs(15, 812),
-    marginHorizontal: 15,
+    marginHorizontal: wp(4),
     color: 'grey',
   },
   messageButtonStyle:{
-    left: 340, 
-    marginTop: 60,
+    left: wp(90.6), 
+    marginTop: hp(7),
     position: 'absolute'
   },
   messageIconStyle:{
-    height: 30, 
-    width: 30
+    height: hp(3.6) , 
+    width: hp(3.6)
   },
   userDetailsStyle:{
     flexDirection: 'row',

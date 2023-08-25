@@ -26,20 +26,15 @@ import Modal from 'react-native-modal';
 const LikedScreen = () => {
   const [userName, setUserName] = useState('');
   const [originalName, setOriginalName] = useState('');
-  const [postData, setPostData] = useState([]);
   const [comment, setComment] = useState('');
-  const [userId, setUserId] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
   const [name, setName] = useState('');
-  const [phoneNo, setPhoneNo] = useState('');
   const [profilepic, setProfilePic] = useState('');
   const [firebaseCommentData, setFirebaseCommentData] = useState([]);
   const [firebaseImageData, setfirebaseImageData] = useState([]);
-  const [likeIs, setLikeIs] = useState('');
-  const [save, setSave] = useState(false);
   const [postid, setPostid] = useState();
-  const [videoData, setVideoData] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [currentUserprofilepicture, setcurrentUserprofilepicture] = useState();
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -56,12 +51,12 @@ const LikedScreen = () => {
       .get()
       .then(async user => {
         setUserName(user._data.userName);
-        setOriginalName(user._data.name);ð
-      })
+        setOriginalName(user._data.name);
+        setcurrentUserprofilepicture(user._data.profilePic);
+      });
     firestore()
       .collection('Post')
       .onSnapshot(response => {
-        console.log(response._docs._data, 'heyheyhye');
         const items = [];
         response.forEach(documentSnapshot => {
           items.push({
@@ -97,7 +92,6 @@ const LikedScreen = () => {
     }, 1000);
   }, []);
   const onSave = async postId => {
-    console.log(postId, '9090909099');
     const userId = auth().currentUser.uid;
     firestore()
       .collection('Post')
@@ -123,7 +117,6 @@ const LikedScreen = () => {
       });
   };
   const onUnSave = async postId => {
-    console.log(postId, 'unsave');
     const userId = auth().currentUser.uid;
 
     const D = await firestore().collection('Post').doc(postId).get();
@@ -237,8 +230,17 @@ const LikedScreen = () => {
           />
         </View>
         <View style={styles.profilePicViewStyle}>
-          <ProfilePic imageStyle={styles.imageStyle}/>
-          <View style={{marginBottom: hp(1.5)}}>
+          <Image
+            source={
+              currentUserprofilepicture
+                ? {uri: currentUserprofilepicture}
+                : icon.account
+            }
+            style={styles.imageStyle}
+            resizeMode="stretch"
+          />
+
+          <View style={styles.userNameViewStyle}>
             <Text style={styles.fontStyle}>{userName}</Text>
             <Text style={styles.fontStyle1}>{originalName}</Text>
           </View>
@@ -253,7 +255,7 @@ const LikedScreen = () => {
             renderItem={({item, index}) => {
               return (
                 <View style={styles.flatListViewStyle}>
-                  <View style={{flexDirection: 'row', width: '90%'}}>
+                  <View style={styles.postUserNameStyle}>
                     <Image
                       source={
                         item.profilePic ? {uri: item.profilePic} : icon.account
@@ -264,9 +266,7 @@ const LikedScreen = () => {
                     <Text style={styles.nameTextStyle}>
                       {item.userName}
                       {'\n'}
-                      <Text style={{fontWeight: 'normal', color: 'grey'}}>
-                        {item.location}
-                      </Text>
+                      <Text style={styles.locationStyle}>{item.location}</Text>
                     </Text>
                   </View>
                   {item.mediaType ? (
@@ -305,14 +305,7 @@ const LikedScreen = () => {
                           resizeMode="contain"
                         />
                       </TouchableOpacity>
-                      <Text
-                        style={{
-                          fontWeight: 'normal',
-                          color: 'grey',
-                          fontSize: fs(20, 812),
-                          marginTop: hp(0.2),
-                          marginLeft: wp(0.7),
-                        }}>
+                      <Text style={styles.likeCountStyle}>
                         {item.isLikedUser.length}
                       </Text>
                       <TouchableOpacity
@@ -326,14 +319,7 @@ const LikedScreen = () => {
                           resizeMode="contain"
                         />
                       </TouchableOpacity>
-                      <Text
-                        style={{
-                          fontWeight: 'normal',
-                          color: 'grey',
-                          fontSize: fs(20, 812),
-                          marginTop: hp(0.08),
-                          // marginLeft: wp(0.4),
-                        }}>
+                      <Text style={styles.commentCountStyle}>
                         {item.commentData.length}
                       </Text>
                     </View>
@@ -371,15 +357,9 @@ const LikedScreen = () => {
             onBackdropPress={() => {
               toggleModal();
             }}
-            swipeDirection={['down']} // Allow swiping down to close the modal
-            style={{justifyContent: 'flex-end', margin: 0}}>
-            <View
-              style={{
-                backgroundColor: 'white',
-                padding: 10,
-                height: 500,
-                borderRadius: 12,
-              }}>
+            swipeDirection={['down']}
+            style={styles.modalStyle}>
+            <View style={styles.commentViewStyle}>
               <Profile
                 profilePicViewStyle={styles.profilePicViewStyle}
                 profileImageStyle={styles.imageStyle}
@@ -411,12 +391,7 @@ const LikedScreen = () => {
                   }}>
                   <Image
                     source={icon.send}
-                    style={{
-                      height: 25,
-                      width: 25,
-                      marginTop: 3,
-                      marginRight: 3,
-                    }}
+                    style={styles.commentSendStyle}
                     resizeMode="contain"
                   />
                 </TouchableOpacity>
@@ -425,14 +400,8 @@ const LikedScreen = () => {
                 <FlatList
                   data={firebaseCommentData}
                   renderItem={({item, index}) => {
-                    // console.log(item.comment,"hellojjskdjsdlfj");
                     return (
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          width: '90%',
-                          marginVertical: 5,
-                        }}>
+                      <View style={styles.commentProfilePic}>
                         <Image
                           source={
                             item.profilepic
@@ -443,16 +412,10 @@ const LikedScreen = () => {
                           resizeMode="stretch"
                         />
                         <View>
-                          <Text
-                            style={{
-                              fontWeight: '600',
-                              marginHorizontal: 5,
-                              marginBottom: 5,
-                            }}>
+                          <Text style={styles.commentUserNameStyle}>
                             {item.userName}
                           </Text>
-                          <Text
-                            style={{fontWeight: 'normal', marginHorizontal: 5}}>
+                          <Text style={styles.commentNameStyle}>
                             {item.comment}
                           </Text>
                         </View>
@@ -475,6 +438,30 @@ const styles = StyleSheet.create({
   linearGradient: {
     flex: 1,
   },
+  commentCountStyle: {
+    fontWeight: 'normal',
+    color: 'grey',
+    fontSize: fs(20, 812),
+    marginTop: hp(0.08),
+  },
+  likeCountStyle: {
+    fontWeight: 'normal',
+    color: 'grey',
+    fontSize: fs(20, 812),
+    marginTop: hp(0.2),
+    marginLeft: wp(0.7),
+  },
+  locationStyle: {
+    fontWeight: 'normal',
+    color: 'grey',
+  },
+  postUserNameStyle: {
+    flexDirection: 'row',
+    width: '90%',
+  },
+  userNameViewStyle: {
+    marginBottom: hp(1.5),
+  },
   imageStyle: {
     height: hp(7),
     width: hp(7),
@@ -491,13 +478,11 @@ const styles = StyleSheet.create({
     fontSize: fs(20, 812),
     marginHorizontal: wp(4),
     marginVertical: hp(0.61),
-    // fontWeight:'bold'
   },
   fontStyle1: {
     fontSize: fs(17, 812),
-    marginHorizontal: 15,
+    marginHorizontal: wp(4),
     color: 'grey',
-    // fontWeight:'bold'
   },
   headerFontStyle: {
     fontSize: fs(22, 812),
@@ -518,12 +503,12 @@ const styles = StyleSheet.create({
     height: hp(3.8),
     width: hp(3.8),
     borderRadius: 100,
-    marginTop: 8,
+    marginTop: hp(0.98),
   },
   nameTextStyle: {
     fontWeight: 'bold',
     fontSize: fs(17, 812),
-    marginHorizontal: 15,
+    marginHorizontal: wp(4),
   },
   buttonViewStyle: {
     flexDirection: 'row',
@@ -557,10 +542,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   modalView: {
-    margin: 20,
+    margin: hp(2.4),
     backgroundColor: 'white',
     borderRadius: 20,
-    padding: 35,
+    padding: hp(4.2),
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
@@ -573,7 +558,7 @@ const styles = StyleSheet.create({
   },
   button: {
     borderRadius: 20,
-    padding: 10,
+    padding: hp(1.2),
     elevation: 2,
   },
   buttonOpen: {
@@ -599,14 +584,14 @@ const styles = StyleSheet.create({
     marginTop: hp(2.2),
   },
   modalCloseButtonStyle: {
-    height: 40,
-    width: 40,
+    height: hp(4.9),
+    width: hp(4.9),
     backgroundColor: '#A975FF',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 100,
-    marginLeft: -20,
-    marginTop: 10,
+    marginLeft: -hp(2.4),
+    marginTop: hp(1.2),
   },
   modalCloseButtonTextStyle: {
     color: 'white',
@@ -647,7 +632,37 @@ const styles = StyleSheet.create({
   },
   fontStyle1: {
     fontSize: fs(15, 812),
-    marginHorizontal: 15,
+    marginHorizontal: wp(4),
     color: 'grey',
+  },
+  commentNameStyle: {
+    fontWeight: 'normal',
+    marginHorizontal: wp(1.3),
+  },
+  commentUserNameStyle: {
+    fontWeight: '600',
+    marginHorizontal: wp(1.3),
+    marginBottom: hp(0.6),
+  },
+  commentProfilePic: {
+    flexDirection: 'row',
+    width: '90%',
+    marginVertical: hp(0.6),
+  },
+  commentSendStyle: {
+    height: hp(3.2),
+    width: hp(3.2),
+    marginTop: hp(0.36),
+    marginRight: hp(0.8),
+  },
+  commentViewStyle: {
+    backgroundColor: 'white',
+    padding: hp(1.2),
+    height: hp(61.5),
+    borderRadius: 12,
+  },
+  modalStyle: {
+    justifyContent: 'flex-end',
+    margin: 0,
   },
 });

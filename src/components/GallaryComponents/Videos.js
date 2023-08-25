@@ -11,7 +11,7 @@ import {image} from '../../helpers/ImageHelper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import Video from 'react-native-video';
-import { hp, wp } from '../../helpers/GlobalFunction';
+import {hp, wp} from '../../helpers/GlobalFunction';
 import auth from '@react-native-firebase/auth';
 
 const Videos = () => {
@@ -36,17 +36,17 @@ const Videos = () => {
         setfirebaseImageData(items);
       });
   };
-  
+
   const Item = ({item}) => {
     return (
       <TouchableOpacity>
-        {!item.item.mediaType ?
-        <Video
-          source={{uri: item.item.url}}
-          style={styles.imageStyle}
-          resizeMode="stretch"
-        />
-        :null}
+        {!item.item.mediaType ? (
+          <Video
+            source={{uri: item.item.url}}
+            style={styles.imageStyle}
+            resizeMode="stretch"
+          />
+        ) : null}
       </TouchableOpacity>
     );
   };

@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
-    left: 20,
+    left: wp(5.3),
     shadowColor: '#d3d3d3',
     shadowOffset: {width: -2, height: 4},
     shadowOpacity: 2,
@@ -151,13 +151,13 @@ const styles = StyleSheet.create({
     marginVertical: hp(5),
   },
   followButtonstyle: {
-    height: 40,
+    height: hp(4.9),
     width: '50%',
     backgroundColor: '#A975FF',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 18,
-    marginHorizontal: 15,
+    marginHorizontal: wp(4),
   },
   followButtonfontStyle: {
     color: 'white',
@@ -167,11 +167,11 @@ const styles = StyleSheet.create({
   buttonViewstyle: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 15,
+    marginVertical: hp(1.8),
   },
   headerIconStyle: {
-    height: 15,
-    width: 15,
+    height: hp(1.8),
+    width:hp(1.8),
   },
   editInputStyle: {
     marginLeft: wp(3),

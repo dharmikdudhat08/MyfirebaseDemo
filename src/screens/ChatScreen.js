@@ -31,26 +31,20 @@ import Video from 'react-native-video';
 
 const ChatScreen = () => {
   const isFocused = useIsFocused();
-  const data = useSelector(state => state.chatUserValue)
+  const data = useSelector(state => state.chatUserValue);
   const navigation = useNavigation();
-
   const [messages, setMessages] = useState([]);
   const [userIdName, setUserIdName] = useState();
   const [currentUserProfilePic, setCurrentUserProfilePic] = useState();
   const [newUid, setNewUid] = useState('');
-
   const [nweMessage, setNewMessage] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
   const [imageData, setImageData] = useState('');
   const [filename, setFilename] = useState();
   const [path, setPath] = useState();
-  const [imageDataFileName, setImageDataFileName] = useState('');
   const [videoData, setVideoData] = useState('');
-  const [location, setLocation] = useState('');
-  const [caption, setCaption] = useState('');
   const [imageurl, setImageurl] = useState(null);
   const [videourl, setVideourl] = useState(null);
-  const [online,setOnline] = useState(false);
 
   const newDate = new Date();
   const updatedDate = moment(newDate).format('DD-MM-YYYY');
@@ -231,7 +225,9 @@ const ChatScreen = () => {
           </TouchableOpacity>
           <View style={styles.headerProfileStyle}>
             <Image
-              source={data[0].profilePic ? {uri: data[0].profilePic} : icon.account}
+              source={
+                data[0].profilePic ? {uri: data[0].profilePic} : icon.account
+              }
               style={styles.ProfileStyle}
               resizeMode="stretch"
             />
@@ -320,7 +316,11 @@ const ChatScreen = () => {
                         },
                       ]}>
                       <Image
-                        source={data[0].profilePic ? {uri:data[0].profilePic} : icon.account}
+                        source={
+                          data[0].profilePic
+                            ? {uri: data[0].profilePic}
+                            : icon.account
+                        }
                         style={styles.messageProfilePicStyle}
                         resizeMode="stretch"
                       />
@@ -404,12 +404,12 @@ const ChatScreen = () => {
             onBackdropPress={() => {
               toggleModal();
             }}
-            swipeDirection={['down']} // Allow swiping down to close the modal
+            swipeDirection={['down']}
             style={styles.modalStyle}>
             <View
               style={[
                 styles.modalViewStyle,
-                {height: imageData || videoData ? 500 : 200},
+                {height: imageData || videoData ? hp(61.5) : hp(24.6)},
               ]}>
               {imageData || videoData ? (
                 <View>
@@ -514,19 +514,19 @@ const styles = StyleSheet.create({
     width: hp(6.14),
     borderRadius: 100,
     position: 'absolute',
-    right: 320,
+    right:wp(83.33),
   },
   ProfileStyle1: {
     height: hp(3.8),
     width: hp(3.8),
     borderRadius: 100,
-    marginTop: 8,
+    marginTop: hp(0.9),
   },
   nameTextStyle: {
     fontWeight: 'bold',
     fontSize: fs(17, 812),
-    marginHorizontal: 80,
-    marginBottom: 5,
+    marginHorizontal: wp(21.33),
+    marginBottom:hp(0.6) ,
   },
   inputStyle: {
     backgroundColor: '#FFFEFE',
@@ -536,7 +536,6 @@ const styles = StyleSheet.create({
     borderColor: 'grey',
     borderRadius: 15,
     position: 'absolute',
-    // marginTop: 650,
     top: hp(80),
     alinItems: 'center',
     paddingLeft: wp(3.5),
@@ -551,23 +550,23 @@ const styles = StyleSheet.create({
     tintColor: 'grey',
   },
   Buttonstyle: {
-    height: 40,
+    height:hp(4.9) ,
     width: '40%',
     backgroundColor: '#A975FF',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 18,
-    marginHorizontal: 15,
+    marginHorizontal: wp(4),
   },
   postCancelButtonStyle: {
-    height: 40,
+    height: hp(4.9),
     width: '40%',
     borderColor: '#A975FF',
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 18,
-    marginHorizontal: 15,
+    marginHorizontal: wp(4),
   },
   ButtonfontStyle: {
     color: 'white',
@@ -575,16 +574,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   cancelButtonStyle: {
-    height: 40,
+    height: hp(4.9),
     width: '40%',
     borderColor: '#A975FF',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 18,
-    marginHorizontal: 15,
+    marginHorizontal: wp(4),
     borderWidth: 2,
     alignSelf: 'center',
-    marginVertical: 40,
+    marginVertical: hp(4.9),
   },
   cancelButtonFontStyle: {
     color: '#A975FF',
@@ -598,11 +597,11 @@ const styles = StyleSheet.create({
   headerViewStyle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: 10,
+    marginVertical: hp(1.2),
   },
   backButtonTouchStyle: {
-    marginTop: 6,
-    marginLeft: 20,
+    marginTop: hp(0.7),
+    marginLeft: wp(5.3),
   },
   headerProfileStyle: {
     flexDirection: 'row',
@@ -617,23 +616,23 @@ const styles = StyleSheet.create({
   },
   messageContainerViewStyle: {
     borderRadius: 4,
-    marginVertical: 3,
-    padding: 4,
+    marginVertical: hp(0.35),
+    padding: hp(0.49),
     flexDirection: 'row',
   },
   messageViewStyle: {
     borderWidth: 1,
-    marginHorizontal: 5,
-    padding: 4,
+    marginHorizontal:wp(1.3),
+    padding: hp(0.49),
     borderRadius: 6,
   },
   messageMediaStyle: {
-    height: 200,
-    width: 200,
+    height: hp(24.6),
+    width: hp(24.6),
   },
   messageProfilePicStyle: {
-    height: 30,
-    width: 30,
+    height: hp(3.6),
+    width: hp(3.6),
     borderRadius: 100,
   },
   textMessageStyle: {
@@ -651,17 +650,17 @@ const styles = StyleSheet.create({
   },
   gallaryStyle: {
     marginTop: hp(0.8),
-    marginLeft: 10,
-    marginRight: 10,
+    marginLeft: wp(2.6),
+    marginRight: wp(2.6),
   },
   gallaryIconStyle: {
-    height: 30,
-    width: 30,
+    height: hp(3.6),
+    width: hp(3.6),
     tintColor: 'grey',
   },
   sendArrowButtonStyle: {
     marginTop: hp(0.8),
-    marginRight: 10,
+    marginRight: wp(2.6),
   },
   modalStyle: {
     justifyContent: 'flex-end',
@@ -669,7 +668,7 @@ const styles = StyleSheet.create({
   },
   modalViewStyle: {
     backgroundColor: 'white',
-    padding: 10,
+    padding: hp(1.2),
     borderRadius: 12,
   },
   imageViewStyle: {
@@ -677,8 +676,8 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   modalMediaStyle: {
-    height: 330,
-    width: 375,
+    height:hp(40.6),
+    width: wp(100),
     borderRadius: 10,
     borderWidth: 1,
     alignSelf: 'center',
@@ -689,8 +688,8 @@ const styles = StyleSheet.create({
     marginVertical: hp(7),
     alignSelf: 'center',
   },
-  photovideoButtonStyle:{
-    flexDirection: 'row', 
-    alignSelf: 'center'
-  }
+  photovideoButtonStyle: {
+    flexDirection: 'row',
+    alignSelf: 'center',
+  },
 });

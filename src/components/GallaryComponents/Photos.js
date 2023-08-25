@@ -35,7 +35,7 @@ const Photos = () => {
         setfirebaseImageData(items);
       });
   };
-  
+
   const Item = ({item}) => {
     return (
       <TouchableOpacity>

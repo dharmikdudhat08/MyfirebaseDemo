@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   },
   fontStyle1: {
     fontSize: fs(17, 812),
-    marginHorizontal: 15,
+    marginHorizontal: wp(4),
     color: 'grey',
   },
   headerFontStyle: {
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
   },
   followingFontStyle1: {
     fontSize: fs(16, 812),
-    marginHorizontal: 15,
+    marginHorizontal: wp(4),
     color: 'grey',
   },
   followbuttonStyle: {
@@ -307,12 +307,12 @@ const styles = StyleSheet.create({
     marginBottom: hp(1.5)
   },
   searchBarIconStyle:{
-    height: 30, 
-    width: 30, 
+    height: hp(3.6), 
+    width: hp(3.6), 
     tintColor: 'grey'
   },
   searchBarInputStyle:{
-    marginHorizontal: 10, 
+    marginHorizontal:wp(2.6) , 
     width: '70%'
   }
 });

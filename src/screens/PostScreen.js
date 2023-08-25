@@ -28,17 +28,13 @@ const PostScreen = ({navigation}) => {
   const [userName, setUserName] = useState('');
   const [phoneNo, setPhoneNo] = useState('');
   const [imageData, setImageData] = useState('');
-  const [imageDataFileName, setImageDataFileName] = useState('');
   const [videoData, setVideoData] = useState('');
   const [location, setLocation] = useState('');
   const [caption, setCaption] = useState('');
   const [uidValue, setUidValue] = useState('');
   const [count, setCount] = useState(0);
-  const [imageName, setImageName] = useState();
   const [filename, setFilename] = useState();
   const [path, setPath] = useState();
-  const [imageurl, setImageurl] = useState({});
-  const [videourl, setVideourl] = useState({});
   const [profilePic,setProfilePic] = useState();
 
   useEffect(() => {
@@ -281,7 +277,6 @@ const PostScreen = ({navigation}) => {
             style={styles.postButtonStyle}>
             <Text style={styles.postButtonTextStyle}>Post</Text>
           </TouchableOpacity>
-          {/* <TimeAgo style={{ fontWeight: 'bold', color: '#00000060' ,fontSize: 12}} dateTo={64045030} /> */}
         </View>
       </SafeAreaView>
     </LinearGradient>
@@ -313,7 +308,7 @@ const styles = StyleSheet.create({
   },
   fontStyle1: {
     fontSize: fs(17, 812),
-    marginHorizontal: 15,
+    marginHorizontal: wp(4),
     color: 'grey',
   },
   inputStyle: {
@@ -382,23 +377,23 @@ const styles = StyleSheet.create({
     marginTop: hp(4),
   },
   cancelButtonStyle: {
-    height: 40,
+    height: hp(4.9),
     width: '35%',
     borderColor: '#A975FF',
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 18,
-    marginHorizontal: 15,
+    marginHorizontal: wp(4),
   },
   postButtonStyle: {
-    height: 40,
+    height: hp(4.9),
     width: '35%',
     backgroundColor: '#A975FF',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 18,
-    marginHorizontal: 15,
+    marginHorizontal: wp(4),
   },
   postButtonTextStyle: {
     color: 'white',

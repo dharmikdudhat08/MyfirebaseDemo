@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {Image, StyleSheet, TouchableOpacity, Text, View} from 'react-native';
 import {icon} from '../../helpers/ImageHelper';
+import { hp } from '../../helpers/GlobalFunction';
 
 const BottomBar = ({navigation}) => {
   const [press1, setPress1] = useState(true);
@@ -32,12 +33,12 @@ export default BottomBar;
 
 const styles = StyleSheet.create({
   bottomButtonStyle: {
-    height: 28,
-    width: 28,
+    height: hp(3.4),
+    width: hp(3.4),
     justifyContent: 'center',
   },
   buttonViewStyle: {
-    height: '8%',
+    height: hp(8),
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-around',

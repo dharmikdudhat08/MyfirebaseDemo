@@ -13,23 +13,14 @@ const Profile = ({profilePicViewStyle,userNameFontStyle,nameFontStyle,profileIma
   useEffect(() => {
     getUid();
   });
-
   const getUid = async () => {
     const userId = await AsyncStorage.getItem('UID');
-    // console.log('uid=======>>>>', userId);
     setUidValue(userId);
-
-    // console.log(userId, 'hellohellohello');
     await firestore()
       .collection('User_Details')
       .doc(userId)
       .get()
       .then(res => {
-        // console.log('====================================');
-        // console.log(res);
-        // console.log('====================================');
-        // console.log(res._data.name);
-        // console.log(res._data.userName);
         setName(res._data.name);
         setUserName(res._data.userName);
         setPhoneNo(res._data.phoneNo);

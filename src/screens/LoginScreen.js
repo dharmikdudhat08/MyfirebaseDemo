@@ -17,6 +17,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getPathFromState} from '@react-navigation/native';
+import {TextInputBar} from '../components';
 
 GoogleSignin.configure({
   webClientId:
@@ -119,31 +120,15 @@ const LoginScreen = ({navigation}) => {
       <View>
         <Image
           source={image.instagram}
-          style={{
-            height: hp(12.31),
-            width: hp(12.31),
-            marginVertical: hp(12.31),
-            alignSelf: 'center',
-          }}
+          style={styles.appIconStyle}
           resizeMode="contain"
         />
       </View>
-      <View style={styles.inputStyle}>
-        <Image
-          source={icon.mail}
-          style={styles.inputIconStyle}
-          resizeMode="contain"
-        />
-        <TextInput
-          style={{marginLeft: wp(4)}}
-          placeholder="Email Address"
-          autoCapitalize="none"
-          autoCorrect={false}
-          fontSize={fs(17, 812)}
-          placeholderTextColor={'#D3D3D3'}
-          onChangeText={txt => setEmail(txt)}
-        />
-      </View>
+      <TextInputBar
+        source={icon.mail}
+        placeHolder={'Email Address'}
+        onChangeText={txt => setEmail(txt)}
+      />
       <View style={styles.inputStyle}>
         <TouchableOpacity
           onPress={() => {
@@ -169,22 +154,19 @@ const LoginScreen = ({navigation}) => {
           }}
         />
       </View>
-      <TouchableOpacity
-        style={styles.buttonStyle}
-        // onPress={() => navigation.navigate('Bottom')}
-        onPress={onLogin}>
-        <Text style={{fontSize: fs(20, 812), color: 'white'}}>Log in</Text>
+      <TouchableOpacity style={styles.buttonStyle} onPress={onLogin}>
+        <Text style={styles.loginButtonStyle}>Log in</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={{marginVertical: wp(2)}}
+        style={styles.creatAccountViewStyle}
         onPress={() => navigation.navigate('SignUp')}>
-        <Text style={{fontSize: fs(17, 812), textDecorationLine: 'underline'}}>
+        <Text style={styles.creatAccountTextStyle}>
           Create new account
         </Text>
       </TouchableOpacity>
-      <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 30}}>
+      <View style={styles.orViewStyle}>
         <View style={styles.lineStyle}></View>
-        <Text style={{fontSize: fs(17, 812), color: 'grey'}}>OR</Text>
+        <Text style={styles.orStyle}>OR</Text>
         <View style={styles.lineStyle}></View>
       </View>
       <TouchableOpacity
@@ -196,21 +178,18 @@ const LoginScreen = ({navigation}) => {
           style={styles.iconStyle}
         />
         <Text
-          style={{fontSize: fs(17, 812), color: '#0164E1', marginLeft: wp(14)}}>
+          style={styles.googleloginStyle}>
           Sign With Google
         </Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.authStyle, {bottom: 35}]}
-        // onPress={generateRandomId}
-      >
+      <TouchableOpacity style={[styles.authStyle, {bottom: 35}]}>
         <Image
           source={icon.facebook}
           resizeMode="contain"
           style={styles.iconStyle}
         />
         <Text
-          style={{fontSize: fs(17, 812), color: '#0164E1', marginLeft: wp(14)}}>
+          style={styles.facebookloginStyle}>
           Sign With Facebook
         </Text>
       </TouchableOpacity>
@@ -225,6 +204,36 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
   },
+  facebookloginStyle:{
+    fontSize: fs(17, 812), 
+    color: '#0164E1', 
+    marginLeft: wp(14)
+  },
+  googleloginStyle:{
+    fontSize: fs(17, 812),
+     color: '#0164E1', 
+     marginLeft: wp(14)
+  },
+  orStyle:{
+    fontSize: fs(17, 812), 
+    color: 'grey'
+  },
+  orViewStyle:{
+    flexDirection: 'row', 
+    alignItems: 'center',
+     marginTop: hp(3.6)
+  },
+  loginButtonStyle:{
+    fontSize: fs(20, 812), 
+    color: 'white'
+  },
+  creatAccountViewStyle:{
+    marginVertical: wp(2)
+  }, 
+  creatAccountTextStyle:{
+    fontSize: fs(17, 812), 
+    textDecorationLine: 'underline'
+  }, 
   inputStyle: {
     backgroundColor: '#FFFEFE',
     height: hp(7.38),
@@ -273,6 +282,12 @@ const styles = StyleSheet.create({
     width: '40%',
     borderColor: '#D3D3D3',
     height: '0%',
-    marginHorizontal: 10,
+    marginHorizontal: wp(2.6),
+  },
+  appIconStyle: {
+    height: hp(12.31),
+    width: hp(12.31),
+    marginVertical: hp(12.31),
+    alignSelf: 'center',
   },
 });

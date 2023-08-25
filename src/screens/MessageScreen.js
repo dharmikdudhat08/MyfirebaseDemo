@@ -23,7 +23,6 @@ import {useDispatch} from 'react-redux';
 import { ChatUidDataValue } from '../redux/action/action';
 
 const MessageScreen = ({navigation}) => {
-  const [messages, setMessages] = useState([]);
   const [userData, setUserData] = useState([]);
   const [userId, setUserId] = useState();
   const dispatch = useDispatch();
@@ -73,7 +72,7 @@ const MessageScreen = ({navigation}) => {
       style={styles.linearGradient}>
       <SafeAreaView>
         <HeaderBarDiff name={'Messages'} />
-        <View style={{marginTop: hp(3.4)}}>
+        <View style={styles.flatlistStyle}>
           <FlatList
             data={userData}
             renderItem={({item, index}) => {
@@ -83,11 +82,7 @@ const MessageScreen = ({navigation}) => {
                     onPress={() =>
                       onChat(item.userName, item.profilePic, item.uid)
                     }
-                    style={{
-                      flexDirection: 'row',
-                      width: '90%',
-                      marginVertical: 10,
-                    }}>
+                    style={styles.profileViewStyle}>
                     <Image
                       source={
                         item.profilePic ? {uri: item.profilePic} : icon.account
@@ -114,6 +109,14 @@ const styles = StyleSheet.create({
   linearGradient: {
     flex: 1,
   },
+  flatlistStyle:{
+    marginTop: hp(3.4)
+  },
+  profileViewStyle:{
+    flexDirection: 'row',
+    width: '90%',
+    marginVertical: hp(1.2),
+  },
   ProfileStyle: {
     height: hp(5.14),
     width: hp(5.14),
@@ -123,12 +126,12 @@ const styles = StyleSheet.create({
     height: hp(3.8),
     width: hp(3.8),
     borderRadius: 100,
-    marginTop: 8,
+    marginTop: hp(0.98),
   },
   nameTextStyle: {
     fontWeight: 'bold',
     fontSize: fs(17, 812),
-    marginHorizontal: 15,
+    marginHorizontal: wp(4),
   },
   flatListViewStyle: {
     justifyContent: 'center',

@@ -206,8 +206,8 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   imageStyle1: {
-    height: 20,
-    width: 20,
+    height: hp(2.4),
+    width: hp(2.4),
   },
   logoutStyle: {
     flexDirection: 'row',
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   headerFontStyle: {
     fontSize: fs(22, 812),
     fontWeight: 'bold',
-    left: 160,
+    left: wp(42.6),
   },
   profileViewStyle: {
     flexDirection: 'row',
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   followerStyle: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 30,
+    marginHorizontal: wp(8),
   },
   followCountStyle: {
     fontSize: fs(17, 812),
@@ -260,13 +260,13 @@ const styles = StyleSheet.create({
     marginTop: hp(3),
   },
   followButtonstyle: {
-    height: 40,
+    height: hp(4.9),
     width: '40%',
     backgroundColor: '#A975FF',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 18,
-    marginHorizontal: 15,
+    marginHorizontal: wp(4),
   },
   followButtonfontStyle: {
     color: 'white',
@@ -274,14 +274,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   editButtonStyle: {
-    height: 40,
+    height: hp(4.9),
     width: '40%',
     borderColor: '#A975FF',
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 18,
-    marginHorizontal: 15,
+    marginHorizontal: wp(4),
   },
   postButtonStyle: {
     flexDirection: 'row',
