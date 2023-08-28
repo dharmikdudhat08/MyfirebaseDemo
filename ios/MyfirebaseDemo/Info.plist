@@ -46,10 +46,14 @@
 			</dict>
 		</dict>
 	</dict>
-	<key>NSCameraUsageDescription </key>
-	<string>Please Give access Camera</string>
+	<key>LSHasLocalizedDisplayName</key>
+	<false/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Microphone permission description</string>
+  <key>NSCameraUsageDescription</key>
+  <string>Camera permission description</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Please Give location Permission</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Please give access Gallary</string>
 	<key>UILaunchStoryboardName</key>

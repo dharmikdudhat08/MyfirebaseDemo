@@ -5,9 +5,11 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  PermissionsAndroid,
   View,
+  Platform,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import {fs, hp, wp} from '../helpers/GlobalFunction';
 import {icon, image} from '../helpers/ImageHelper';
@@ -16,6 +18,8 @@ import {ProfilePic, TextInputBar} from '../components';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useDispatch, useSelector} from 'react-redux';
+import storage from '@react-native-firebase/storage';
+
 import firestore from '@react-native-firebase/firestore';
 
 const FillAuthenticdetail = ({navigation}) => {
@@ -23,20 +27,58 @@ const FillAuthenticdetail = ({navigation}) => {
   const [username, setUsername] = useState('');
   const [phoneNo, setPhoneNo] = useState();
   const [imageData,setImageData] = useState();
+  const [email,setEmail] = useState();
   const [filename, setFilename] = useState();
   const [path, setPath] = useState();
   const uid = auth().currentUser.uid
+//0.39.0
+
+
+// useEffect(()=>{checkPermission()},[])
+
+
+// const checkPermission = async () => {
+//   if (Platform.OS === 'ios') {
+// console.log("sddsdsdsd");
+//   } else {
+//     try {
+// console.log("adsfasdas");
+//       const granted = await PermissionsAndroid.request(
+//         PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+//         {
+//           title: "kadsufgaios",
+//           message:
+//             "dhjkscgikadisucfh",
+//         } 
+//       );
+//       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+//         console.log('Storage Permission Granted.');
+//         openGallary()
+//       } else {
+//         Alert.alert("aaaaaaaa");
+//       }
+//     } catch (err) {console.log("err  :: ",err); }
+//   }
+// };
+
+
 
   const openGallary = () => {
-    try {
+    try{
       ImagePicker.openPicker({
-        mediaType: 'photo',
         width: 300,
         height: 400,
         cropping: true,
       }).then(async image => {
+        console.log()
         setImageData(image.path);
-        setFilename(JSON.stringify(image.filename));
+        if(Platform.OS ==  'android'){
+          setFilename(image.path.split('/').pop());
+        }
+        else{
+          setFilename(JSON.stringify(image.filename));
+        }
+        // console.log(filename)
         setPath(image.path);
         await AsyncStorage.setItem('PROFILE_PIC', `${image.path}`);
       });
@@ -158,15 +200,17 @@ const styles = StyleSheet.create({
   imageStyle: {
     height: hp(10.31),
     width: hp(10.31),
-    alignSelf: 'stretch',
+    alignSelf: 'center',
     borderRadius: 100,
   },
   profileViewStyle: {
     marginVertical: hp(10.31),
+    justifyContent:'center',
   },
   profilePicTextStyle: {
     fontSize: fs(17, 812),
     alignSelf: 'center',
     marginTop: hp(1.2),
+    color:'black'
   },
 });

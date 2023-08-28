@@ -179,8 +179,12 @@ const ChatScreen = () => {
         height: 400,
         cropping: true,
       }).then(async image => {
-        setFilename(JSON.stringify(image.filename));
-        setPath(image.path);
+        if(Platform.OS ==  'android'){
+          setFilename(image.path.split('/').pop());
+        }
+        else{
+          setFilename(JSON.stringify(image.filename));
+        }
         setImageData(image.path);
       });
     } catch (error) {
@@ -193,7 +197,12 @@ const ChatScreen = () => {
         mediaType: 'video',
         cropping: false,
       }).then(async video => {
-        setFilename(JSON.stringify(video.filename));
+        if(Platform.OS ==  'android'){
+          setFilename(image.path.split('/').pop());
+        }
+        else{
+          setFilename(JSON.stringify(image.filename));
+        }
         setPath(video.path);
         setVideoData(video.path);
         console.log(video.path);
@@ -232,6 +241,15 @@ const ChatScreen = () => {
               resizeMode="stretch"
             />
             <Text style={styles.nameTextStyle}>{data[0].userName}</Text>
+            <View style={{position:'absolute',left:wp(70)}}>
+              <TouchableOpacity onPress={()=>navigation.navigate('VideoCall')}>
+                <Image
+                  source={icon.videoCall}
+                  style={{height: hp(6.15), width: hp(6.15)}}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
@@ -514,7 +532,7 @@ const styles = StyleSheet.create({
     width: hp(6.14),
     borderRadius: 100,
     position: 'absolute',
-    right:wp(83.33),
+    right: wp(83.33),
   },
   ProfileStyle1: {
     height: hp(3.8),
@@ -526,7 +544,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: fs(17, 812),
     marginHorizontal: wp(21.33),
-    marginBottom:hp(0.6) ,
+    marginBottom: hp(0.6),
   },
   inputStyle: {
     backgroundColor: '#FFFEFE',
@@ -536,7 +554,7 @@ const styles = StyleSheet.create({
     borderColor: 'grey',
     borderRadius: 15,
     position: 'absolute',
-    top: hp(80),
+    top: hp(81),
     alinItems: 'center',
     paddingLeft: wp(3.5),
     marginVertical: hp(1),
@@ -550,7 +568,7 @@ const styles = StyleSheet.create({
     tintColor: 'grey',
   },
   Buttonstyle: {
-    height:hp(4.9) ,
+    height: hp(4.9),
     width: '40%',
     backgroundColor: '#A975FF',
     justifyContent: 'center',
@@ -607,7 +625,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     width: '100%',
     alignItems: 'center',
-    marginTop: 5,
   },
   flatlistViewStyle: {
     width: '100%',
@@ -622,7 +639,7 @@ const styles = StyleSheet.create({
   },
   messageViewStyle: {
     borderWidth: 1,
-    marginHorizontal:wp(1.3),
+    marginHorizontal: wp(1.3),
     padding: hp(0.49),
     borderRadius: 6,
   },
@@ -676,7 +693,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   modalMediaStyle: {
-    height:hp(40.6),
+    height: hp(40.6),
     width: wp(100),
     borderRadius: 10,
     borderWidth: 1,

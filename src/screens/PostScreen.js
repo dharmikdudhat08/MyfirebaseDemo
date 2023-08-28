@@ -1,6 +1,7 @@
 import {
   Alert,
   Image,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -22,6 +23,7 @@ import {utils} from '@react-native-firebase/app';
 import storage from '@react-native-firebase/storage';
 import {generateUUID} from '../helpers/RandomIdGenerator';
 import TimeAgo from '@andordavoti/react-native-timeago';
+import { request, PERMISSIONS } from 'react-native-permissions';
 
 const PostScreen = ({navigation}) => {
   const [name, setName] = useState('');
@@ -56,7 +58,27 @@ const PostScreen = ({navigation}) => {
       });
   };
 
-  const openImageGallary = () => {
+  const requestCameraPermission = async () => {
+    try {
+      const cameraStatus = await request(PERMISSIONS.ANDROID.CAMERA);
+      console.log('Camera Permission Status:', cameraStatus);
+    } catch (error) {
+      console.error('Error requesting camera permission:', error);
+    }
+  };
+
+
+
+
+  const openImageGallary = async() => {
+   
+      // try {
+      //   const storageStatus = await request(PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE);
+      //   console.log('Storage Permission Status:', storageStatus);
+      // } catch (error) {
+      //   console.error('Error requesting storage permission:', error);
+      // }
+    
     try {
       ImagePicker.openPicker({
         mediaType: 'photo',
@@ -64,7 +86,12 @@ const PostScreen = ({navigation}) => {
         height: 400,
         cropping: true,
       }).then(async image => {
-        setFilename(JSON.stringify(image.filename));
+        if(Platform.OS ==  'android'){
+          setFilename(image.path.split('/').pop());
+        }
+        else{
+          setFilename(JSON.stringify(image.filename));
+        }
         setPath(image.path);
 
         setImageData(image.path);
@@ -79,7 +106,12 @@ const PostScreen = ({navigation}) => {
         mediaType: 'video',
         cropping: false,
       }).then(async video => {
-        setFilename(JSON.stringify(video.filename));
+        if(Platform.OS ==  'android'){
+          setFilename(image.path.split('/').pop());
+        }
+        else{
+          setFilename(JSON.stringify(image.filename));
+        }
         setPath(video.path);
         setVideoData(video.path);
       });

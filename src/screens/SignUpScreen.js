@@ -37,7 +37,9 @@ const SignUpScreen = ({navigation}) => {
         height: 400,
         cropping: true,
       }).then(async image => {
+        console.log("tejani tejani ",image)
         setImageData(image.path)
+
         await AsyncStorage.setItem('PROFILE_PIC', `${image.path}`);
       });
     } catch (error) {

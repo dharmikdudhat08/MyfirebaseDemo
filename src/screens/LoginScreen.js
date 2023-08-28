@@ -40,10 +40,7 @@ const LoginScreen = ({navigation}) => {
     return auth()
       .signInWithCredential(googleCredential)
       .then(async res => {
-        dispatch({
-          type: 'ID_TOKEN',
-          payload: `${res.user.uid}`,
-        });
+        console.log("hello hello",res.user.uid)
         await firestore()
           .collection('User_Details')
           .doc(`${res.user.uid}`)
@@ -54,12 +51,6 @@ const LoginScreen = ({navigation}) => {
             } else {
               navigation.navigate('Detail');
             }
-            await firestore()
-              .collection('User_Details')
-              .doc(`${res.user.uid}`)
-              .update({
-                uid: `${res.user.uid}`,
-              });
             await AsyncStorage.setItem('UID', `${res.user.uid}`);
           });
       });

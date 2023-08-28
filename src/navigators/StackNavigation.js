@@ -13,6 +13,7 @@ import AlluserList from '../screens/AlluserList';
 import SplashScreen from '../screens/SplashScreen';
 import ChatScreen from '../screens/ChatScreen';
 import MessageScreen from '../screens/MessageScreen';
+import VideoCall from '../screens/VideoCall';
 
 const Stack = createNativeStackNavigator();
 
@@ -62,6 +63,10 @@ const StackNavigation = () => {
         <Stack.Screen
          name="Message" 
          component={MessageScreen} 
+         />
+        <Stack.Screen
+         name="VideoCall" 
+         component={VideoCall} 
          />
       </Stack.Navigator>
     </NavigationContainer>

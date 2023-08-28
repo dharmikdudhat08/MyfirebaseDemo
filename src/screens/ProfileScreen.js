@@ -42,6 +42,7 @@ const ProfileScreen = ({navigation}) => {
   };
   const name = async () => {
     const uid = auth().currentUser.uid;
+    console.log(uid)
     await firestore()
       .collection('User_Details')
       .doc(`${uid}`)

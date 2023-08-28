@@ -30,6 +30,7 @@ export const icon = {
   keyboard: require('../assets/icons/keyboard_2263611.png'),
   gallary : require('../assets/icons/gallery.png'),
   back_arrow : require('../assets/icons/arrow.png'),
+  videoCall : require('../assets/icons/video-record.png'),
 };
 export const image = {
   splash: require('../assets/images/splash.png'),

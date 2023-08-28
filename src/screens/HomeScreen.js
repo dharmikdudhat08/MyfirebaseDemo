@@ -1,6 +1,7 @@
 import {
   FlatList,
   Image,
+  Platform,
   RefreshControl,
   SafeAreaView,
   ScrollView,
@@ -237,9 +238,7 @@ const HomeScreen = ({navigation}) => {
                     <Text style={styles.nameTextStyle}>
                       {item.userName}
                       {'\n'}
-                      <Text style={styles.locationStyle}>
-                        {item.location}
-                      </Text>
+                      <Text style={styles.locationStyle}>{item.location}</Text>
                     </Text>
                   </View>
                   {item.mediaType == 'image' ? (
@@ -278,8 +277,7 @@ const HomeScreen = ({navigation}) => {
                           resizeMode="contain"
                         />
                       </TouchableOpacity>
-                      <Text
-                        style={styles.likeCountStyle}>
+                      <Text style={styles.likeCountStyle}>
                         {item.isLikedUser.length}
                       </Text>
                       <TouchableOpacity
@@ -293,8 +291,7 @@ const HomeScreen = ({navigation}) => {
                           resizeMode="contain"
                         />
                       </TouchableOpacity>
-                      <Text
-                        style={styles.commentCountStyle}>
+                      <Text style={styles.commentCountStyle}>
                         {item.commentData.length}
                       </Text>
                     </View>
@@ -334,8 +331,7 @@ const HomeScreen = ({navigation}) => {
             }}
             swipeDirection={['down']}
             style={styles.modalStyle}>
-            <View
-              style={styles.commentViewStyle}>
+            <View style={styles.commentViewStyle}>
               <Profile
                 profilePicViewStyle={styles.profilePicViewStyle}
                 profileImageStyle={styles.imageStyle}
@@ -377,8 +373,7 @@ const HomeScreen = ({navigation}) => {
                   data={firebaseCommentData}
                   renderItem={({item, index}) => {
                     return (
-                      <View
-                        style={styles.commentProfilePic}>
+                      <View style={styles.commentProfilePic}>
                         <Image
                           source={
                             item.profilepic
@@ -389,12 +384,10 @@ const HomeScreen = ({navigation}) => {
                           resizeMode="stretch"
                         />
                         <View>
-                          <Text
-                            style={styles.commentUserNameStyle}>
+                          <Text style={styles.commentUserNameStyle}>
                             {item.userName}
                           </Text>
-                          <Text
-                            style={styles.commentNameStyle}>
+                          <Text style={styles.commentNameStyle}>
                             {item.comment}
                           </Text>
                         </View>
@@ -417,35 +410,35 @@ const styles = StyleSheet.create({
   linearGradient: {
     flex: 1,
   },
-  commentNameStyle:{
-    fontWeight: 'normal', 
-    marginHorizontal: wp(1.33)
+  commentNameStyle: {
+    fontWeight: 'normal',
+    marginHorizontal: wp(1.33),
   },
-  commentUserNameStyle:{
+  commentUserNameStyle: {
     fontWeight: '600',
-    marginHorizontal:  wp(1.33),
+    marginHorizontal: wp(1.33),
     marginBottom: hp(0.6),
   },
-  commentProfilePic:{
+  commentProfilePic: {
     flexDirection: 'row',
     width: '90%',
     marginVertical: hp(0.6),
   },
-  commentSendStyle:{
+  commentSendStyle: {
     height: hp(3.07),
     width: hp(3.07),
     marginTop: hp(0.35),
     marginRight: wp(0.8),
   },
-  commentViewStyle:{
+  commentViewStyle: {
     backgroundColor: 'white',
     padding: hp(1.2),
     height: hp(61.5),
     borderRadius: 12,
   },
-  modalStyle:{
-    justifyContent: 'flex-end', 
-    margin: 0
+  modalStyle: {
+    justifyContent: 'flex-end',
+    margin: 0,
   },
   flatListViewStyle: {
     justifyContent: 'center',
@@ -593,34 +586,34 @@ const styles = StyleSheet.create({
     marginHorizontal: wp(4),
     color: 'grey',
   },
-  messageButtonStyle:{
-    left: wp(90.6), 
-    marginTop: hp(7),
-    position: 'absolute'
+  messageButtonStyle: {
+    left: wp(90.6),
+    marginTop: Platform.OS == 'android' ? hp(2) : hp(7),
+    position: 'absolute',
   },
-  messageIconStyle:{
-    height: hp(3.6) , 
-    width: hp(3.6)
+  messageIconStyle: {
+    height: hp(3.6),
+    width: hp(3.6),
   },
-  userDetailsStyle:{
+  userDetailsStyle: {
     flexDirection: 'row',
-    width: '90%'
+    width: '90%',
   },
-  locationStyle:{
-    fontWeight: 'normal', 
-    color: 'grey'
+  locationStyle: {
+    fontWeight: 'normal',
+    color: 'grey',
   },
-  likeCountStyle:{
+  likeCountStyle: {
     fontWeight: 'normal',
     color: 'grey',
     fontSize: fs(20, 812),
     marginTop: hp(0.2),
     marginLeft: wp(0.7),
   },
-  commentCountStyle:{
+  commentCountStyle: {
     fontWeight: 'normal',
     color: 'grey',
     fontSize: fs(20, 812),
     marginTop: hp(0.08),
-  }
+  },
 });
