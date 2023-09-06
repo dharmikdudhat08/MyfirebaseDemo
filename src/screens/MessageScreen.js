@@ -14,13 +14,15 @@ import React, {useCallback, useEffect, useState} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import {HeaderBarDiff} from '../components';
 import {GiftedChat} from 'react-native-gifted-chat';
-import firestore from '@react-native-firebase/firestore';
+import firestore, { firebase } from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import Modal from 'react-native-modal';
 import {fs, hp, wp} from '../helpers/GlobalFunction';
 import {icon} from '../helpers/ImageHelper';
 import {useDispatch} from 'react-redux';
-import { ChatUidDataValue } from '../redux/action/action';
+import {ChatUidDataValue} from '../redux/action/action';
+import messaging from '@react-native-firebase/messaging';
+import { ClientRoleChangeFailedReason } from 'react-native-agora';
 
 const MessageScreen = ({navigation}) => {
   const [userData, setUserData] = useState([]);
@@ -31,7 +33,21 @@ const MessageScreen = ({navigation}) => {
     const uid = auth().currentUser.uid;
     setUserId(uid);
     followerData();
+    fcmTokenUpdate();
   }, []);
+  const fcmTokenUpdate = async () => {
+    const uid = auth().currentUser.uid;
+    try {
+      const token = await firebase.messaging().getToken();
+console.log(token,"fcmsesesesesese")
+      firestore().collection('User_Details').doc(uid).update({
+        fcmToken: `${token}`,
+      });
+      console.log(token);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   const followerData = () => {
     firestore()
       .collection('User_Details')
@@ -52,6 +68,7 @@ const MessageScreen = ({navigation}) => {
                 profilePic: items[x].profilePic,
                 userName: items[x].userName,
                 uid: items[x].uid,
+                token : items[x].fcmToken
               });
             }
           }
@@ -60,9 +77,9 @@ const MessageScreen = ({navigation}) => {
         setUserData(tempData);
       });
   };
-  const onChat = (userName, profilePic, uid) => {
-    const data ={userName :userName , profilePic : profilePic, uid : uid}
-    dispatch(ChatUidDataValue(data))
+  const onChat = (userName, profilePic, uid,fcmToken) => {
+    const data = {userName: userName, profilePic: profilePic, uid: uid, fcmToken : fcmToken};
+    dispatch(ChatUidDataValue(data));
     navigation.navigate('Chat');
   };
 
@@ -80,7 +97,7 @@ const MessageScreen = ({navigation}) => {
                 <View style={styles.flatListViewStyle}>
                   <TouchableOpacity
                     onPress={() =>
-                      onChat(item.userName, item.profilePic, item.uid)
+                      onChat(item.userName, item.profilePic, item.uid,item.token)
                     }
                     style={styles.profileViewStyle}>
                     <Image
@@ -109,10 +126,10 @@ const styles = StyleSheet.create({
   linearGradient: {
     flex: 1,
   },
-  flatlistStyle:{
-    marginTop: hp(3.4)
+  flatlistStyle: {
+    marginTop: hp(3.4),
   },
-  profileViewStyle:{
+  profileViewStyle: {
     flexDirection: 'row',
     width: '90%',
     marginVertical: hp(1.2),
@@ -132,6 +149,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: fs(17, 812),
     marginHorizontal: wp(4),
+    color: 'black',
   },
   flatListViewStyle: {
     justifyContent: 'center',

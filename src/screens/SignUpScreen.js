@@ -205,6 +205,7 @@ const styles = StyleSheet.create({
   },
   profilePicTextStyle: {
     fontSize: fs(17, 812),
+    color:'black',
     alignSelf: 'center',
     marginTop: hp(1.2),
   },
@@ -217,12 +218,14 @@ const styles = StyleSheet.create({
   },
   textStyleAccount: {
     fontSize: fs(17, 812),
+    color:'black',
     textDecorationLine: 'underline',
   },
   profileViewStyle: {
     marginVertical: hp(10.31),
   },
   textStyleAccountClick: {
+    color:'black',
     marginVertical: wp(2),
   },
 });

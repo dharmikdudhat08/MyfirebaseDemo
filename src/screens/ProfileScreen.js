@@ -13,8 +13,8 @@ import {All, HeaderBar, Photos, ProfilePic, Videos} from '../components';
 import {icon, image} from '../helpers/ImageHelper';
 import {fs, hp, wp} from '../helpers/GlobalFunction';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import firestore from '@react-native-firebase/firestore';
 import {useSelector} from 'react-redux';
+import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 
 const ProfileScreen = ({navigation}) => {
@@ -117,7 +117,7 @@ const ProfileScreen = ({navigation}) => {
           <TouchableOpacity
             onPress={() => navigation.navigate('Edit')}
             style={styles.editButtonStyle}>
-            <Text>Edit Profile</Text>
+            <Text style={styles.editButtonFontstyle}>Edit Profile</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.postButtonStyle}>
@@ -199,6 +199,7 @@ const styles = StyleSheet.create({
   nameFontStyle: {
     fontSize: fs(20, 812),
     fontWeight: 'bold',
+    color:'black',
   },
   imageStyle: {
     height: hp(10.31),
@@ -220,14 +221,20 @@ const styles = StyleSheet.create({
   logoutFontStyle: {
     fontSize: fs(20, 812),
     fontWeight: 'bold',
+    color:'black'
+
   },
   headerStyle: {
     flexDirection: 'row',
+    color:'black'
+
   },
   headerFontStyle: {
     fontSize: fs(22, 812),
     fontWeight: 'bold',
     left: wp(42.6),
+    color:'black'
+
   },
   profileViewStyle: {
     flexDirection: 'row',
@@ -244,6 +251,8 @@ const styles = StyleSheet.create({
   followCountStyle: {
     fontSize: fs(17, 812),
     fontWeight: 'bold',
+    color:'black'
+
   },
   followtextStyle: {
     fontSize: fs(17, 812),
@@ -293,4 +302,8 @@ const styles = StyleSheet.create({
   photosStyle: {
     marginTop: hp(3),
   },
+  editButtonFontstyle:{
+    color : '#A975FF',
+
+  }
 });

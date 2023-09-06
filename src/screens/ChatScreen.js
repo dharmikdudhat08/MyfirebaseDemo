@@ -1,8 +1,10 @@
 import {
   Alert,
+  AppRegistry,
   FlatList,
   Image,
   KeyboardAvoidingView,
+  Platform,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -18,7 +20,7 @@ import {icon} from '../helpers/ImageHelper';
 import {fs, hp, wp} from '../helpers/GlobalFunction';
 import {useSelector} from 'react-redux';
 import {Bubble, GiftedChat, InputToolbar} from 'react-native-gifted-chat';
-import firestore from '@react-native-firebase/firestore';
+import firestore, {firebase} from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -28,6 +30,10 @@ import ImagePicker from 'react-native-image-crop-picker';
 import storage from '@react-native-firebase/storage';
 import {generateUUID} from '../helpers/RandomIdGenerator';
 import Video from 'react-native-video';
+import messaging from '@react-native-firebase/messaging';
+import notifee, { AndroidStyle } from '@notifee/react-native';
+import { AndroidColor } from '@notifee/react-native'; 
+
 
 const ChatScreen = () => {
   const isFocused = useIsFocused();
@@ -50,12 +56,128 @@ const ChatScreen = () => {
   const updatedDate = moment(newDate).format('DD-MM-YYYY');
   const currentDate = updatedDate.toString().split('-');
 
+
+  const CustomComponent=()=> {
+    navigation.navigate('Chat')
+  }
+  
+  AppRegistry.registerComponent('custom-component', () => CustomComponent);
+
+
+
+
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
   useEffect(() => {
     getUserDetails();
+    showIncommineNotification();
+    notifee.onForegroundEvent(({ type, detail }) => {
+      if (type === 'press') {
+        console.log('Notification pressed:', detail.notification);
+        navigation.navigate('VideoCall')
+      }
+    });
+    
+    notifee.onBackgroundEvent(async ({ type, detail }) => {
+      if (type === 'press') {
+        navigation.navigate('VideoCall')
+        console.log('Notification pressed while app is in background:', detail.notification);
+      }
+    });
   }, []);
+  const showIncommineNotification = async()=>{
+    await messaging().onMessage(async remoteMessage => {
+      if(remoteMessage){
+        displayNitifi()
+      }
+    });
+  }
+  const sendPushNotification = async () => {
+    const FIREBASE_API_KEY = 'AIzaSyB0-bQqF3aNRZh4z4ss-sz4uf3Q2nv3eZU';
+    const message = {
+      registration_ids: [
+       data[0].fcmToken,
+      ],
+      notification: {
+        title: 'Video Call',
+        body: `${userIdName} is calling you`,
+        vibrate: 1,
+        sound: 1,
+        show_in_foreground: true,
+        show_in_background: true,
+        priority: 'high',
+        content_available: true,
+        
+      },
+      data: {
+        title: 'Video Call',
+        body: `${userIdName} is calling you`,
+      },
+    };
+
+    let headers = new Headers({
+      'Content-Type': 'application/json',
+      Authorization:
+        'key=AAAAvXymAS0:APA91bGpvbCMeKl1QMverYNjDnaDMUWgwTT6oeCQ0OdMG2YJaOsdilp09QxAO4ouLB7frNHadpqIvJ1sBwBRfoTkhamtCVQgl3NIv5CarRBSMVlQc_6wMA7-vGWEoKiLMxgw11EpCe6M',
+    });
+
+    let response = await fetch('https://fcm.googleapis.com/fcm/send', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(message),
+    });
+    response = await response.json();
+    console.log(response.success);
+  };
+  const displayNitifi=async ()=>{
+    await notifee.requestPermission()
+
+    // Create a channel (required for Android)
+    const channelId = await notifee.createChannel({
+      id: 'default',
+      name: 'Default Channel',
+    });
+    await notifee.displayNotification({
+      title: 'Video Call',
+      body: `${userIdName} is calling you`,
+      android: {
+        sound: 'hollow',
+        channelId,
+        actions: [
+          {
+            title: 'Open',
+            pressAction: {
+              id: 'custom-component',
+              launchActivity: 'default',
+            },
+          },
+        ],
+        input : true,
+        // style: {
+        //   type: AndroidStyle.MESSAGING,
+        //   person: {
+        //     name: 'John Doe',
+        //     icon: 'https://my-cdn.com/avatars/123.png',
+        //   },
+        //   messages: [
+        //     {
+        //       text: 'Hey, how are you?',
+        //       timestamp: Date.now() - 600000, 
+        //     },
+        //     {
+        //       text: 'Great thanks, food later?',
+        //       timestamp: Date.now(),
+        //       person: {
+        //         name: 'Sarah Lane',
+        //         icon: 'https://my-cdn.com/avatars/567.png',
+        //       },
+        //     },
+        //   ],
+        // },
+      },
+    });
+  }
   const getUserDetails = async () => {
     const userId = auth().currentUser.uid;
     const docId =
@@ -198,10 +320,10 @@ const ChatScreen = () => {
         cropping: false,
       }).then(async video => {
         if(Platform.OS ==  'android'){
-          setFilename(image.path.split('/').pop());
+          setFilename(video.path.split('/').pop());
         }
         else{
-          setFilename(JSON.stringify(image.filename));
+          setFilename(JSON.stringify(video.filename));
         }
         setPath(video.path);
         setVideoData(video.path);
@@ -242,7 +364,10 @@ const ChatScreen = () => {
             />
             <Text style={styles.nameTextStyle}>{data[0].userName}</Text>
             <View style={{position:'absolute',left:wp(70)}}>
-              <TouchableOpacity onPress={()=>navigation.navigate('VideoCall')}>
+              <TouchableOpacity onPress={()=>{
+                navigation.navigate('VideoCall')
+                sendPushNotification()
+              }}>
                 <Image
                   source={icon.videoCall}
                   style={{height: hp(6.15), width: hp(6.15)}}
@@ -386,6 +511,7 @@ const ChatScreen = () => {
               <TextInput
                 placeholder="Type a message..."
                 autoCapitalize="none"
+                style={styles.inputTextStyle}
                 value={nweMessage}
                 autoCorrect={false}
                 fontSize={fs(19, 812)}
@@ -545,6 +671,7 @@ const styles = StyleSheet.create({
     fontSize: fs(17, 812),
     marginHorizontal: wp(21.33),
     marginBottom: hp(0.6),
+    color:'black',
   },
   inputStyle: {
     backgroundColor: '#FFFEFE',
@@ -554,7 +681,7 @@ const styles = StyleSheet.create({
     borderColor: 'grey',
     borderRadius: 15,
     position: 'absolute',
-    top: hp(81),
+    top: Platform.OS == 'android' ? hp(85): hp(81),
     alinItems: 'center',
     paddingLeft: wp(3.5),
     marginVertical: hp(1),
@@ -655,6 +782,7 @@ const styles = StyleSheet.create({
   textMessageStyle: {
     fontSize: fs(18, 812),
     fontWeight: '600',
+    color:'black',
   },
   textMessageTimeStyle: {
     color: 'grey',
@@ -709,4 +837,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignSelf: 'center',
   },
+  inputTextStyle:{
+    color:'black'
+  }
 });

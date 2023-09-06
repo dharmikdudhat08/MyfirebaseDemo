@@ -19,66 +19,32 @@ import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useDispatch, useSelector} from 'react-redux';
 import storage from '@react-native-firebase/storage';
-
 import firestore from '@react-native-firebase/firestore';
 
 const FillAuthenticdetail = ({navigation}) => {
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [phoneNo, setPhoneNo] = useState();
-  const [imageData,setImageData] = useState();
-  const [email,setEmail] = useState();
+  const [imageData, setImageData] = useState();
+  const [email, setEmail] = useState();
   const [filename, setFilename] = useState();
   const [path, setPath] = useState();
-  const uid = auth().currentUser.uid
-//0.39.0
-
-
-// useEffect(()=>{checkPermission()},[])
-
-
-// const checkPermission = async () => {
-//   if (Platform.OS === 'ios') {
-// console.log("sddsdsdsd");
-//   } else {
-//     try {
-// console.log("adsfasdas");
-//       const granted = await PermissionsAndroid.request(
-//         PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-//         {
-//           title: "kadsufgaios",
-//           message:
-//             "dhjkscgikadisucfh",
-//         } 
-//       );
-//       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-//         console.log('Storage Permission Granted.');
-//         openGallary()
-//       } else {
-//         Alert.alert("aaaaaaaa");
-//       }
-//     } catch (err) {console.log("err  :: ",err); }
-//   }
-// };
-
-
+  const uid = auth().currentUser.uid;
 
   const openGallary = () => {
-    try{
+    try {
       ImagePicker.openPicker({
         width: 300,
         height: 400,
         cropping: true,
       }).then(async image => {
-        console.log()
+        console.log();
         setImageData(image.path);
-        if(Platform.OS ==  'android'){
+        if (Platform.OS == 'android') {
           setFilename(image.path.split('/').pop());
-        }
-        else{
+        } else {
           setFilename(JSON.stringify(image.filename));
         }
-        // console.log(filename)
         setPath(image.path);
         await AsyncStorage.setItem('PROFILE_PIC', `${image.path}`);
       });
@@ -162,9 +128,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
   },
-  submitButtonStyle:{
-    fontSize: fs(20, 812), 
-    color: 'white'
+  submitButtonStyle: {
+    fontSize: fs(20, 812),
+    color: 'white',
   },
   inputStyle: {
     backgroundColor: '#FFFEFE',
@@ -205,12 +171,12 @@ const styles = StyleSheet.create({
   },
   profileViewStyle: {
     marginVertical: hp(10.31),
-    justifyContent:'center',
+    justifyContent: 'center',
   },
   profilePicTextStyle: {
     fontSize: fs(17, 812),
     alignSelf: 'center',
     marginTop: hp(1.2),
-    color:'black'
+    color: 'black',
   },
 });

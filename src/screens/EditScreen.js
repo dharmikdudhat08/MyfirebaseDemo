@@ -1,20 +1,26 @@
 import {
   Image,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
+  Notification,
   TouchableOpacity,
   View,
+  Alert,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import {HeaderBar, ProfilePic} from '../components';
 import {fs, hp, wp} from '../helpers/GlobalFunction';
 import {icon} from '../helpers/ImageHelper';
 import {useNavigation} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
+import firestore, {firebase} from '@react-native-firebase/firestore';
+import messaging from '@react-native-firebase/messaging';
+import notifee, { AndroidStyle } from '@notifee/react-native';
+import { AndroidColor } from '@notifee/react-native'; 
 
 const EditScreen = () => {
   const [name, setName] = useState('');
@@ -25,6 +31,118 @@ const EditScreen = () => {
     await firestore().collection('User_Details').doc(uid).update({
       name: name,
       userName: username,
+    });
+  };
+  // const showCallNotification = () => {
+  //   if (Platform.OS === 'android') {
+  //     const channelId = 'call_channel_id';
+  //     const channelName = 'Call Notifications';
+  //     const channelDescription = 'Incoming call notifications';
+
+  //     Notification.createChannelAndroid({
+  //       channelId,
+  //       channelName,
+  //       channelDescription,
+  //     });
+
+  //     Notification.localNotification({
+  //       channelId,
+  //       title: 'Incoming Call',
+  //       message: 'John Doe is calling you',
+  //       playSound: true,
+  //       userInfo: {}, // Add any custom data here
+  //     });
+  //   }
+  // };
+  useEffect(() => {
+    getToken();
+  }, []);
+  const displayNitifi=async ()=>{
+    await notifee.requestPermission()
+
+    // Create a channel (required for Android)
+    const channelId = await notifee.createChannel({
+      id: 'default',
+      name: 'Default Channel',
+    });
+
+    await notifee.displayNotification({
+      title: 'Notification Title',
+      body: 'Main body content of the notification',
+      android: {
+        channelId,
+        input : true,
+        style: {
+          type: AndroidStyle.MESSAGING,
+          person: {
+            name: 'John Doe',
+            icon: 'https://my-cdn.com/avatars/123.png',
+          },
+          messages: [
+            {
+              text: 'Hey, how are you?',
+              timestamp: Date.now() - 600000, 
+            },
+            {
+              text: 'Great thanks, food later?',
+              timestamp: Date.now(),
+              person: {
+                name: 'Sarah Lane',
+                icon: 'https://my-cdn.com/avatars/567.png',
+              },
+            },
+          ],
+        },
+      },
+    });
+  }
+  const getToken = async () => {
+    try {
+      const token = await firebase.messaging().getToken();
+      console.log(token);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const sendPushNotification = async () => {
+    const FIREBASE_API_KEY = 'xxxxxxxxxxxxx';
+    const message = {
+      registration_ids: [
+        'eueP0VQeTj-kuft8GAsdS5:APA91bHFImCfK-TPf6D29iNfbVL_q_BZqQJ1xZEeZEVMPVOcoQuErYn6WUQv2d22NUVeWvApW1pIGDTMo4LlhSkqU3KQ3Ua2pzBcXx-2P_D4DwyWhR85No-ho7WUPKGE3DT5B1e_kRj8',
+      ],
+      notification: {
+        title: 'india vs south africa test',
+        body: 'IND chose to bat',
+        vibrate: 1,
+        sound: 1,
+        show_in_foreground: true,
+        priority: 'high',
+        content_available: true,
+      },
+      data: {
+        title: 'india vs south africa test',
+        body: 'IND chose to bat',
+        score: 50,
+        wicket: 1,
+      },
+    };
+
+    let headers = new Headers({
+      'Content-Type': 'application/json',
+      Authorization:
+        'key=AAAAvXymAS0:APA91bGpvbCMeKl1QMverYNjDnaDMUWgwTT6oeCQ0OdMG2YJaOsdilp09QxAO4ouLB7frNHadpqIvJ1sBwBRfoTkhamtCVQgl3NIv5CarRBSMVlQc_6wMA7-vGWEoKiLMxgw11EpCe6M',
+    });
+
+    let response = await fetch('https://fcm.googleapis.com/fcm/send', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(message),
+    });
+    response = await response.json();
+    console.log(response);
+
+    await messaging().onMessage(async remoteMessage => {
+      Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
     });
   };
   return (
@@ -84,7 +202,7 @@ const EditScreen = () => {
           />
         </View>
         <View style={styles.buttonViewstyle}>
-          <TouchableOpacity onPress={onSubmit} style={styles.followButtonstyle}>
+          <TouchableOpacity onPress={displayNitifi} style={styles.followButtonstyle}>
             <Text style={styles.followButtonfontStyle}>Submit</Text>
           </TouchableOpacity>
         </View>
@@ -122,6 +240,7 @@ const styles = StyleSheet.create({
   headerFontStyle: {
     fontSize: fs(22, 812),
     fontWeight: 'bold',
+    color: 'black',
   },
   inputStyle: {
     borderBottomWidth: 3,
@@ -171,7 +290,7 @@ const styles = StyleSheet.create({
   },
   headerIconStyle: {
     height: hp(1.8),
-    width:hp(1.8),
+    width: hp(1.8),
   },
   editInputStyle: {
     marginLeft: wp(3),

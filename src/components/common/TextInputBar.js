@@ -17,7 +17,6 @@ const TextInputBar = ({source, placeHolder, onChangeText}) => {
         autoCapitalize="none"
         autoCorrect={false}
         fontSize={fs(17, 812)}
-        co
         placeholderTextColor={'#D3D3D3'}
         onChangeText={onChangeText}
       />
@@ -47,6 +46,5 @@ const styles = StyleSheet.create({
   },
   tetxInputStyle: {
     marginLeft: wp(4),
-    color:'black'
   },
 });

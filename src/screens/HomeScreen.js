@@ -251,7 +251,6 @@ const HomeScreen = ({navigation}) => {
                     <Video
                       source={{uri: item.url}}
                       style={styles.postStyle}
-                      controls={true}
                       resizeMode="stretch"
                     />
                   )}
@@ -413,11 +412,13 @@ const styles = StyleSheet.create({
   commentNameStyle: {
     fontWeight: 'normal',
     marginHorizontal: wp(1.33),
+    color:'black',
   },
   commentUserNameStyle: {
     fontWeight: '600',
     marginHorizontal: wp(1.33),
     marginBottom: hp(0.6),
+    color:'black',
   },
   commentProfilePic: {
     flexDirection: 'row',
@@ -447,7 +448,7 @@ const styles = StyleSheet.create({
   },
   ProfileStyle: {
     height: hp(5.14),
-    width: wp(12),
+    width: wp(11),
     borderRadius: 100,
   },
   ProfileStyle1: {
@@ -460,6 +461,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: fs(17, 812),
     marginHorizontal: wp(4),
+    color:'black',
   },
   buttonViewStyle: {
     flexDirection: 'row',
@@ -526,6 +528,7 @@ const styles = StyleSheet.create({
   modalText: {
     marginBottom: hp(1.7),
     textAlign: 'center',
+    color:'black',
   },
   likeButtonStyle: {
     height: hp(3.4),
@@ -580,6 +583,7 @@ const styles = StyleSheet.create({
     fontSize: fs(18, 812),
     marginHorizontal: wp(4),
     marginVertical: hp(0.61),
+    color:'black',
   },
   fontStyle1: {
     fontSize: fs(15, 812),

@@ -48,5 +48,6 @@ const styles = StyleSheet.create({
   headerFontStyle: {
     fontSize: fs(22, 812),
     fontWeight: 'bold',
+    color:'black'
   },
 });

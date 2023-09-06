@@ -253,10 +253,12 @@ const styles = StyleSheet.create({
   followingFontStyle: {
     fontSize: fs(18, 812),
     marginHorizontal: wp(4),
+    color:'black',
     marginVertical: hp(0.61),
   },
   followingFontStyle1: {
     fontSize: fs(16, 812),
+    color:'black',
     marginHorizontal: wp(4),
     color: 'grey',
   },
@@ -290,6 +292,7 @@ const styles = StyleSheet.create({
   },
   followButtonFontStyle1: {
     fontWeight: 'bold',
+    color:'black',
   },
   inputStyle: {
     height: hp(5.38),

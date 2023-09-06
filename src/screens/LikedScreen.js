@@ -458,6 +458,7 @@ const styles = StyleSheet.create({
   postUserNameStyle: {
     flexDirection: 'row',
     width: '90%',
+    color:'black',
   },
   userNameViewStyle: {
     marginBottom: hp(1.5),
@@ -478,6 +479,7 @@ const styles = StyleSheet.create({
     fontSize: fs(20, 812),
     marginHorizontal: wp(4),
     marginVertical: hp(0.61),
+    color:'black',
   },
   fontStyle1: {
     fontSize: fs(17, 812),
@@ -488,6 +490,7 @@ const styles = StyleSheet.create({
     fontSize: fs(22, 812),
     fontWeight: 'bold',
     alignSelf: 'center',
+    color:'black',
   },
   flatListViewStyle: {
     justifyContent: 'center',
@@ -508,6 +511,7 @@ const styles = StyleSheet.create({
   nameTextStyle: {
     fontWeight: 'bold',
     fontSize: fs(17, 812),
+    color:'black',
     marginHorizontal: wp(4),
   },
   buttonViewStyle: {
@@ -575,6 +579,7 @@ const styles = StyleSheet.create({
   modalText: {
     marginBottom: hp(1.7),
     textAlign: 'center',
+    color:'black',
   },
   likeButtonStyle: {
     height: hp(3.4),
@@ -629,6 +634,7 @@ const styles = StyleSheet.create({
     fontSize: fs(18, 812),
     marginHorizontal: wp(4),
     marginVertical: hp(0.61),
+    color:'black',
   },
   fontStyle1: {
     fontSize: fs(15, 812),
@@ -638,11 +644,13 @@ const styles = StyleSheet.create({
   commentNameStyle: {
     fontWeight: 'normal',
     marginHorizontal: wp(1.3),
+    color:'black',
   },
   commentUserNameStyle: {
     fontWeight: '600',
     marginHorizontal: wp(1.3),
     marginBottom: hp(0.6),
+    color:'black',
   },
   commentProfilePic: {
     flexDirection: 'row',

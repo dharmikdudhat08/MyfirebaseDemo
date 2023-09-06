@@ -107,10 +107,10 @@ const PostScreen = ({navigation}) => {
         cropping: false,
       }).then(async video => {
         if(Platform.OS ==  'android'){
-          setFilename(image.path.split('/').pop());
+          setFilename(video.path.split('/').pop());
         }
         else{
-          setFilename(JSON.stringify(image.filename));
+          setFilename(JSON.stringify(video.filename));
         }
         setPath(video.path);
         setVideoData(video.path);
@@ -302,7 +302,7 @@ const PostScreen = ({navigation}) => {
         )}
         <View style={styles.buttonViewStyle}>
           <TouchableOpacity onPress={onCancel} style={styles.cancelButtonStyle}>
-            <Text>Cancel</Text>
+            <Text style={styles.cancelButtonFontstyle}>Cancel</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={onPostPress}
@@ -337,6 +337,7 @@ const styles = StyleSheet.create({
     fontSize: fs(20, 812),
     marginHorizontal: wp(4),
     marginVertical: hp(0.61),
+    color:'black',
   },
   fontStyle1: {
     fontSize: fs(17, 812),
@@ -440,4 +441,8 @@ const styles = StyleSheet.create({
     right: 0,
     borderRadius: 16,
   },
+  cancelButtonFontstyle:{
+    color : '#A975FF',
+
+  }
 });

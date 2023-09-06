@@ -15,7 +15,7 @@ const HeaderBar = ({name, headerFontStyle, onPress}) => {
           style={styles.imageStyle}
         />
       </TouchableOpacity>
-      <Text style={headerFontStyle}>{name}</Text>
+    <Text style={[headerFontStyle,{color:'black'}]}>{name}</Text>
     </View>
   );
 };
